@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.util.Lazy;
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Builder
@@ -26,10 +28,8 @@ public class Comment extends Timestamped {
 
 
     @Column(nullable = false)
-    private String content;
+    private String comment;
 
-
-    private String imageUrl;
 
 
 //    @ManyToOne(fetch = FetchType.LAZY)
