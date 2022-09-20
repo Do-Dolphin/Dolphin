@@ -10,8 +10,8 @@ import java.util.Optional;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
 
-    List<Image> findAllByComment(Comment comment);
-
     List<Image> findAllByCommentId(Long comment_id);
+
+    List<Image> findAllByPlaceId(Long place_id);
 
 }

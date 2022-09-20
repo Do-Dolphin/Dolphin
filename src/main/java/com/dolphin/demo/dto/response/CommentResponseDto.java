@@ -25,6 +25,7 @@ public class CommentResponseDto {
     private String content;
     private List<ImageResponseDto> imageList;
 //    private String nickname;
+
     private int star;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;

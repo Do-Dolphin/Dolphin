@@ -11,6 +11,5 @@ import lombok.*;
 public class ImageResponseDto {
 
     private String imageUrl;
-    private String filename;
 
 }

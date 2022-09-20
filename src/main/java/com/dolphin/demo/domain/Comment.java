@@ -2,8 +2,11 @@ package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.request.PlaceRequestDto;
+import com.dolphin.demo.dto.response.ImageResponseDto;
 import lombok.*;
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 
@@ -21,10 +24,12 @@ public class Comment extends Timestamped {
     private Long id;
 
 
+    @NotBlank
     @Column(nullable = false)
     private String title;
 
 
+    @NotBlank
     @Column(nullable = false)
     private String content;
 

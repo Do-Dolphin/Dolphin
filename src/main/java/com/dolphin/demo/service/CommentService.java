@@ -5,7 +5,6 @@ import com.dolphin.demo.domain.Comment;
 import com.dolphin.demo.domain.Image;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.CommentRequestDto;
-import com.dolphin.demo.dto.request.ImageRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
 import com.dolphin.demo.dto.response.ImageResponseDto;
 import com.dolphin.demo.repository.CommentRepository;
@@ -43,6 +42,19 @@ public class CommentService {
         /* 해당 여행지의 모든 후기를 작성일 기준 최신순으로 불러옴 */ /* 수정 예정 */
         List<Comment> commentList = commentRepository.findAllByPlaceId(place_id);
 
+        String imageUrl = null;
+
+        List<Image> imageResult = imageRepository.findAllByPlaceId(place_id);
+        List<ImageResponseDto> imageList = new ArrayList<>();
+
+        for(Image images : imageResult) {
+            imageUrl = images.getImageUrl();
+
+            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
+            imageList.add(imageResponseDto);
+
+        }
+
         /* 보여줄 데이터 리스트 */
         List<CommentResponseDto> commentResult = new ArrayList<>();
         for (Comment comments : commentList) {
@@ -51,6 +63,7 @@ public class CommentService {
                                     .place_id(comments.getPlace().getId())
                                     .title(comments.getTitle())
                                     .content(comments.getContent())
+                                    .imageList(imageList)
                                     .star(comments.getStar())
                                     .createdAt(comments.getCreatedAt())
                                     .modifiedAt(comments.getModifiedAt())
@@ -89,6 +102,7 @@ public class CommentService {
             for (String filename : filenameList) {
                 Image image = Image.builder()
                         .comment(comment)
+                        .place(place)
                         .filename(filename)
                         .imageUrl(amazonS3Client.getUrl(bucket, filename).toString())
                         .build();
@@ -97,16 +111,14 @@ public class CommentService {
         }
 
         String imageUrl = null;
-        String filename = null;
 
         List<Image> imageResult = imageRepository.findAllByCommentId(comment.getId());
         List<ImageResponseDto> imageList = new ArrayList<>();
 
         for(Image images : imageResult) {
             imageUrl = images.getImageUrl();
-            filename = images.getFilename();
 
-            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl, filename);
+            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
             imageList.add(imageResponseDto);
 
         }
@@ -124,27 +136,32 @@ public class CommentService {
 
    }
 
-//   /* 후기 수정하기 */
+   /* 후기 수정하기 */
 //    public ResponseEntity<CommentResponseDto> updateComment(Long comment_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile) throws IOException {
 //
 //        /* 예외처리 추가 예정 */ /* 작성자가 맞는지 */
 //
-//        Place place = placeRepository.findByCommentId(comment_id)
-//                .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
-//
 //        List<Image> image = imageRepository.findAllByCommentId(comment_id);
 //
 //
-//        /* 제목, 내용, 별점을 저장 */
+//        /* 수정된 내용 저장 */
 //        Comment comment = Comment.builder()
-//                .place(place)
 //                .title(commentRequestDto.getTitle())
 //                .content(commentRequestDto.getContent())
-//                .star(place.getStar())
 //                .build();
 //
 //        commentRepository.save(comment);
 //
+//        List<String> filename = null;
+//        /* 이미지 수정 및 재등록 기능 */
+//        if(multipartFile.isEmpty()) {
+//            if(image.size() > 0) {
+//                /* S3 저장소에 있는 이미지 삭제하기 */
+//                for (int i = 0; i < image.size(); i++) {
+//                    filename[i] = null;
+//                }
+//            }
+//        }
 //        if(multipartFile != null) {
 //            /* 기존 이미지가 존재하는 경우 */
 //            if(image.size() > 0) {
@@ -154,7 +171,7 @@ public class CommentService {
 //                }
 //            }
 //
-//            List<String> filenameList = amazonS3Service.upload(multipartFile);
+//            List<String>filenameList = amazonS3Service.upload(multipartFile);
 //            for (String filename : filenameList) {
 //                Image images = Image.builder()
 //                        .comment(comment)
@@ -165,12 +182,27 @@ public class CommentService {
 //            }
 //        }
 //
+//        String imageUrl = null;
+//        String filename = null;
+//
+//        List<Image> imageResult = imageRepository.findAllByCommentId(comment.getId());
+//        List<ImageResponseDto> imageList = new ArrayList<>();
+//
+//        for(Image images : imageResult) {
+//            imageUrl = images.getImageUrl();
+//            filename = images.getFilename();
+//
+//            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl, filename);
+//            imageList.add(imageResponseDto);
+//
+//        }
 //
 //        return ResponseEntity.ok().body(CommentResponseDto.builder()
 //                .comment_id(comment.getId())
 //                .place_id(comment.getPlace().getId())
 //                .title(comment.getTitle())
 //                .content(comment.getContent())
+//                .imageList(imageList)
 //                .star(comment.getStar())
 //                .createdAt(comment.getCreatedAt())
 //                .modifiedAt(comment.getModifiedAt())
