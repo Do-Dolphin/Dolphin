@@ -1,10 +1,7 @@
 package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.ImageRequestDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import javax.persistence.*;
 
 
@@ -31,9 +28,9 @@ public class Image {
     private Comment comment;
 
 
-    public Image(ImageRequestDto imageRequestDto) {
-        this.imageUrl = imageRequestDto.getImageUrl();
-        this.filename = imageRequestDto.getFilename();
+    public Image(Image image) {
+        this.imageUrl = image.getImageUrl();
+        this.filename = image.getFilename();
     }
 
 

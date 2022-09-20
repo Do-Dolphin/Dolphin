@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -36,4 +35,13 @@ public class CommentController {
         return commentService.createComment(place_id, commentRequestDto, multipartFile);
     }
 
+
+    /* 후기 삭제 */
+    @DeleteMapping("/auth/comment/{id}")
+    public ResponseEntity<String> deleteComment(@PathVariable Long id) throws IOException {
+
+        commentService.deleteComment(id);
+
+        return ResponseEntity.ok().body("Delete comment_id : " + id);
+    }
 }

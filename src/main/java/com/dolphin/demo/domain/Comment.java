@@ -40,7 +40,6 @@ public class Comment extends Timestamped {
     @JoinColumn(name = "place_id")
     private Place place;
 
-
     @Column
     private int star;
 

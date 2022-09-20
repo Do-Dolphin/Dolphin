@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -68,7 +69,6 @@ public class CommentService {
         Place place = placeRepository.findById(place_id)
                 .orElseThrow(() -> new IllegalArgumentException("여행지가 존재하지 않습니다."));
 
-
         /* 제목, 내용, 별점을 저장 */
         Comment comment = Comment.builder()
                 .place(place)
@@ -104,6 +104,27 @@ public class CommentService {
                 .createdAt(comment.getCreatedAt())
                 .modifiedAt(comment.getModifiedAt())
                 .build());
+
    }
+
+
+   /* 후기 삭제하기 */
+    public ResponseEntity<Long> deleteComment(Long comment_id) throws IOException {
+
+        /* 예외처리 추가 예정 */
+        Comment comment = commentRepository.findById(comment_id)
+                .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
+
+        List<Image> image = imageRepository.findAllByCommentId(comment_id);
+
+        /* 저장된 이미지가 있으면 S3 저장소에 있는 이미지 삭제하기 */
+        for(int i=0; i<image.size(); i++) {
+            amazonS3Service.deleteFile(image.get(i).getFilename());
+        }
+
+        commentRepository.delete(comment);
+
+        return ResponseEntity.ok().body(comment_id);
+    }
 
 }
