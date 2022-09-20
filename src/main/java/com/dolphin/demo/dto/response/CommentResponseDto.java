@@ -1,6 +1,7 @@
 package com.dolphin.demo.dto.response;
 
 import com.dolphin.demo.domain.Comment;
+import com.dolphin.demo.domain.Image;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,25 +16,15 @@ import java.time.LocalDateTime;
 public class CommentResponseDto {
 
     private Long comment_id;
-//    private Long place_id;
+    private Long place_id;
 //    private Long member_id;
     private String title;
-    private String comment;
+    private String content;
 //    private String nickname;
     private String imageUrl;
-//    private String star;
+    private String filename;
+    private int star;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
-
-
-    public CommentResponseDto(Comment comment) {
-        this.comment_id = comment.getId();
-        this.title = comment.getTitle();
-        this.comment = comment.getComment();
-        this.imageUrl = comment.getImageUrl();
-        this.createdAt = comment.getCreatedAt();
-        this.modifiedAt = comment.getModifiedAt();
-
-    }
 
 }

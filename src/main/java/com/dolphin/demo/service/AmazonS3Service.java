@@ -4,14 +4,20 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -29,12 +35,31 @@ public class AmazonS3Service {
     private String region;
 
 
+
     /* 이미지 업로드 기능 */
     @Transactional
-    public String upload(MultipartFile multipartFile, String filename) throws IOException {
-        amazonS3Client.putObject(new PutObjectRequest(bucket, filename, multipartFile.getInputStream(), null)
-                .withCannedAcl(CannedAccessControlList.PublicRead));
-        return amazonS3Client.getUrl(bucket, filename).toString();
+    public List<String> upload(List<MultipartFile> multipartFiles) {
+
+        List<String> filenameList = new ArrayList<>();
+        multipartFiles.forEach(file -> {
+            /* 고유한 파일 이름 생성 */
+            String filename = createFilename(file.getOriginalFilename());
+            /* objectMetaData에 파라미터로 들어온 파일의 타입 , 크기를 할당 */
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentLength(file.getSize());
+            objectMetadata.setContentType(file.getContentType());
+
+            /* S3객체의 putObject 메서드로 파일 업로드 */
+            try(InputStream inputStream = file.getInputStream()) {
+                amazonS3Client.putObject(new PutObjectRequest(bucket, filename, inputStream, objectMetadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+            }catch(IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+            }
+
+            filenameList.add(filename);
+        });
+        return filenameList;
     }
 
 
@@ -47,7 +72,8 @@ public class AmazonS3Service {
 
 
     /* 고유한 파일 이름 생성 */
-    public String createFilename(MultipartFile multipartFile) {
-        return UUID.randomUUID() + multipartFile.getOriginalFilename();
+    public String createFilename(String filename) {
+        return UUID.randomUUID().toString().concat(filename);
     }
+
 }
