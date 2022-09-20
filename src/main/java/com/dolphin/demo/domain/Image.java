@@ -1,6 +1,7 @@
 package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.ImageRequestDto;
+import com.dolphin.demo.dto.response.ImageResponseDto;
 import lombok.*;
 import javax.persistence.*;
 
@@ -9,8 +10,9 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Entity
-public class Image {
+public class Image extends Timestamped {
 
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +30,9 @@ public class Image {
     private Comment comment;
 
 
-    public Image(Image image) {
-        this.imageUrl = image.getImageUrl();
-        this.filename = image.getFilename();
+    public Image(ImageResponseDto imageResponseDto) {
+        this.imageUrl = imageResponseDto.getImageUrl();
+        this.filename = imageResponseDto.getFilename();
     }
 
 

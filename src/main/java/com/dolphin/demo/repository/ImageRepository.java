@@ -14,6 +14,4 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     List<Image> findAllByCommentId(Long comment_id);
 
-//    Optional<Image> findAllByCommentId(Long comment_id);
-
 }

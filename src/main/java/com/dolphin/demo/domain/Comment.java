@@ -1,12 +1,8 @@
 package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.CommentRequestDto;
-import com.dolphin.demo.dto.request.ImageRequestDto;
 import com.dolphin.demo.dto.request.PlaceRequestDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import javax.persistence.*;
 import java.util.List;
 
@@ -15,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Entity
 public class Comment extends Timestamped {
 
@@ -49,10 +46,11 @@ public class Comment extends Timestamped {
 //    private Member member;
 
 
-    public Comment(CommentRequestDto commentRequestDto, PlaceRequestDto placeRequestDto) {
+    public Comment(CommentRequestDto commentRequestDto, PlaceRequestDto placeRequestDto, List<Image> imageList) {
         this.title = commentRequestDto.getTitle();
         this.content = commentRequestDto.getContent();
         this.star = placeRequestDto.getStar();
+        this.imageList = imageList;
     }
 
     public void update(CommentRequestDto commentRequestDto) {
