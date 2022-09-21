@@ -1,4 +1,4 @@
-package com.dolphin.demo.excetion;
+package com.dolphin.demo.exception;
 
 import lombok.Builder;
 import lombok.Getter;
