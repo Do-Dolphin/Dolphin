@@ -1,4 +1,4 @@
-package com.dolphin.demo.excetion;
+package com.dolphin.demo.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
