@@ -42,7 +42,7 @@ public class Comment extends Timestamped {
     @JoinColumn(name = "place_id")
     private Place place;
 
-    @Column
+    @Column(nullable = false)
     private int star;
 
 //
@@ -51,10 +51,10 @@ public class Comment extends Timestamped {
 //    private Member member;
 
 
-    public Comment(CommentRequestDto commentRequestDto, PlaceRequestDto placeRequestDto, List<Image> imageList) {
+    public Comment(CommentRequestDto commentRequestDto, List<Image> imageList) {
         this.title = commentRequestDto.getTitle();
         this.content = commentRequestDto.getContent();
-        this.star = placeRequestDto.getStar();
+        this.star = commentRequestDto.getStar();
         this.imageList = imageList;
     }
 

@@ -23,6 +23,7 @@ public class CommentResponseDto {
 //    private Long member_id;
     private String title;
     private String content;
+
     private List<ImageResponseDto> imageList;
 //    private String nickname;
 
@@ -36,7 +37,7 @@ public class CommentResponseDto {
         this.title = comment.getTitle();
         this.content = comment.getContent();
         this.imageList = imageList;
-        this.star = comment.getPlace().getStar();
+        this.star = comment.getStar();
         this.createdAt = comment.getCreatedAt();
         this.modifiedAt = comment.getModifiedAt();
     }

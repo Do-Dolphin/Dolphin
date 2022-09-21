@@ -42,22 +42,23 @@ public class CommentService {
         /* 해당 여행지의 모든 후기를 작성일 기준 최신순으로 불러옴 */ /* 수정 예정 */
         List<Comment> commentList = commentRepository.findAllByPlaceId(place_id);
 
-        String imageUrl = null;
 
-        List<Image> imageResult = imageRepository.findAllByPlaceId(place_id);
-        List<ImageResponseDto> imageList = new ArrayList<>();
-
-        for(Image images : imageResult) {
-            imageUrl = images.getImageUrl();
-
-            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
-            imageList.add(imageResponseDto);
-
-        }
-
-        /* 보여줄 데이터 리스트 */
+        /* 보여줄 데이터 */
         List<CommentResponseDto> commentResult = new ArrayList<>();
+        /* 불러온 모든 후기와 후기별 이미지를 comments에 담기 */
         for (Comment comments : commentList) {
+            /* 후기별 이미지 리스트 꺼내오기 */
+            List<Image> imageResult = imageRepository.findAllByCommentId(comments.getId());
+            List<ImageResponseDto> imageList = new ArrayList<>();
+            /* 꺼내온 이미지들을 imageList에 담기 */
+
+            for(Image images : imageResult) {
+                ImageResponseDto imageResponseDto = ImageResponseDto.builder()
+                        .imageUrl(images.getImageUrl())
+                        .build();
+                imageList.add(imageResponseDto);
+            }
+
             CommentResponseDto commentResponseDto = CommentResponseDto.builder()
                                     .comment_id(comments.getId())
                                     .place_id(comments.getPlace().getId())
@@ -88,7 +89,7 @@ public class CommentService {
                 .place(place)
                 .title(commentRequestDto.getTitle())
                 .content(commentRequestDto.getContent())
-                .star(place.getStar())
+                .star(commentRequestDto.getStar())
                 .build();
 
         commentRepository.save(comment);
@@ -211,13 +212,13 @@ public class CommentService {
 
 
    /* 후기 삭제하기 */
-    public ResponseEntity<Long> deleteComment(Long comment_id) throws IOException {
+    public ResponseEntity<Long> deleteComment(Long id) throws IOException {
 
         /* 예외처리 추가 예정 */ /* 작성자가 맞는지 */
-        Comment comment = commentRepository.findById(comment_id)
+        Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
 
-        List<Image> image = imageRepository.findAllByCommentId(comment_id);
+        List<Image> image = imageRepository.findAllByCommentId(id);
 
         /* 저장된 이미지가 있으면 S3 저장소에 있는 이미지 삭제하기 */
         for(int i=0; i<image.size(); i++) {
@@ -226,7 +227,7 @@ public class CommentService {
 
         commentRepository.delete(comment);
 
-        return ResponseEntity.ok().body(comment_id);
+        return ResponseEntity.ok().body(id);
     }
 
 }

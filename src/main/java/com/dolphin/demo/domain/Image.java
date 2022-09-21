@@ -30,20 +30,18 @@ public class Image extends Timestamped {
     private Comment comment;
 
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
     private Place place;
 
 
     public Image(ImageResponseDto imageResponseDto) {
         this.imageUrl = imageResponseDto.getImageUrl();
-//        this.filename = imageResponseDto.getFilename();
     }
 
 
     public void updateImage(ImageRequestDto imageRequestDto) {
         this.imageUrl = imageRequestDto.getImageUrl();
-//        this.filename = imageRequestDto.getFilename();
     }
 
 }

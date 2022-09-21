@@ -15,5 +15,6 @@ public class CommentRequestDto {
 
     private String title;
     private String content;
+    private int star;
 
 }
