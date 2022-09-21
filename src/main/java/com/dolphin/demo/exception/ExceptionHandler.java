@@ -1,4 +1,4 @@
-package com.dolphin.demo.excetion;
+package com.dolphin.demo.exception;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
