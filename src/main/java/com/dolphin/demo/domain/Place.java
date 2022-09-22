@@ -17,7 +17,7 @@ import java.util.List;
 public class Place {
 
   @Id
-  @GeneratedValue
+  @Column(name = "place_id")
   private Long id;
 
   // 도착 공항
@@ -44,6 +44,9 @@ public class Place {
 
   @Column(nullable = false)
   private String sigunguCode;
+
+  @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  private List<Image> imageList;
 
   @Column(nullable = false)
   private String mapX;

@@ -11,5 +11,6 @@ public class PlaceListResponseDto {
     private Long id;
     private String title;
     private float star;
+    private String image;
     private String theme;
 }
