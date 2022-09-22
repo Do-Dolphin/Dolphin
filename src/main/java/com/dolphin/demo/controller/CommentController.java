@@ -37,13 +37,13 @@ public class CommentController {
 
 
     /* 후기 수정 */
-//    @PutMapping("/auth/comment/{id}")
-//    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id,
-//                                                            @RequestPart(value = "data") CommentRequestDto commentRequestDto,
-//                                                            @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile) throws IOException {
-//
-//        return commentService.updateComment(id, commentRequestDto, multipartFile);
-//    }
+    @PutMapping("/auth/comment/{id}")
+    public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id,
+                                                            @RequestPart(value = "data") CommentRequestDto commentRequestDto,
+                                                            @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile) throws IOException {
+
+        return commentService.updateComment(id, commentRequestDto, multipartFile);
+    }
 
 
     /* 후기 삭제 */

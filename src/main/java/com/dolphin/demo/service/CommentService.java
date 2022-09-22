@@ -27,14 +27,13 @@ public class CommentService {
     private final AmazonS3Client amazonS3Client;
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
-
     private final CommentRepository commentRepository;
     private final AmazonS3Service amazonS3Service;
     private final ImageRepository imageRepository;
     private final PlaceRepository placeRepository;
 
 
-    /* 여행지 상세페이지 후기 조회 */
+    /* ======여행지 상세페이지 후기 조회 ====== */
     public ResponseEntity<List<CommentResponseDto>> getComment(Long place_id) {
 
         /* 예외처리 추가 예정 */
@@ -76,7 +75,7 @@ public class CommentService {
     }
 
 
-    /* 후기 등록 */
+    /* ====== 후기 등록 ====== */
     public ResponseEntity<CommentResponseDto> createComment(Long place_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile) throws IOException {
 
         /* 예외처리 추가 예정 */
@@ -85,21 +84,26 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("여행지가 존재하지 않습니다."));
 
         /* 제목, 내용, 별점을 저장 */
-        Comment comment = Comment.builder()
-                .place(place)
-                .title(commentRequestDto.getTitle())
-                .content(commentRequestDto.getContent())
-                .star(commentRequestDto.getStar())
-                .build();
-
+        Comment comment = new Comment(commentRequestDto, place);
         commentRepository.save(comment);
 
 
         /* 이미지 등록하기 */
-        /* 파일을 업로드 후 url과 filename을 리스트로 저장 */
-        if(multipartFile != null) {
+        /**
+         *  이미지 등록하는 경우 : checkNum = 1
+         *  이미지 등록하지 않는 경우 : checkNum = 0
+         */
+        int checkNum = 1;
+        List<String> filenameList = new ArrayList<>();
+        for(MultipartFile file : multipartFile) {
+            if(file.isEmpty()) checkNum = 0;
+        }
 
-            List<String>filenameList = amazonS3Service.upload(multipartFile);
+        /* 이미지 등록하는 경우 */
+        /* 파일을 업로드 후 url과 filename을 리스트로 저장 */
+        if(checkNum == 1) {
+
+            filenameList = amazonS3Service.upload(multipartFile);
             for (String filename : filenameList) {
                 Image image = Image.builder()
                         .comment(comment)
@@ -111,18 +115,17 @@ public class CommentService {
             }
         }
 
-        String imageUrl = null;
-
+        /* 저장된 정보에서 imageUrl List 추출 */
         List<Image> imageResult = imageRepository.findAllByCommentId(comment.getId());
         List<ImageResponseDto> imageList = new ArrayList<>();
 
         for(Image images : imageResult) {
-            imageUrl = images.getImageUrl();
+            String imageUrl = images.getImageUrl();
 
             ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
             imageList.add(imageResponseDto);
 
-        }
+        } //확인!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! new ImageResponseDto(imageUrl)
 
         return ResponseEntity.ok().body(CommentResponseDto.builder()
                 .comment_id(comment.getId())
@@ -137,84 +140,117 @@ public class CommentService {
 
    }
 
-   /* 후기 수정하기 */
-//    public ResponseEntity<CommentResponseDto> updateComment(Long comment_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile) throws IOException {
-//
-//        /* 예외처리 추가 예정 */ /* 작성자가 맞는지 */
-//
-//        List<Image> image = imageRepository.findAllByCommentId(comment_id);
-//
-//
-//        /* 수정된 내용 저장 */
-//        Comment comment = Comment.builder()
-//                .title(commentRequestDto.getTitle())
-//                .content(commentRequestDto.getContent())
-//                .build();
-//
-//        commentRepository.save(comment);
-//
-//        List<String> filename = null;
-//        /* 이미지 수정 및 재등록 기능 */
-//        if(multipartFile.isEmpty()) {
-//            if(image.size() > 0) {
-//                /* S3 저장소에 있는 이미지 삭제하기 */
-//                for (int i = 0; i < image.size(); i++) {
-//                    filename[i] = null;
-//                }
-//            }
-//        }
-//        if(multipartFile != null) {
-//            /* 기존 이미지가 존재하는 경우 */
-//            if(image.size() > 0) {
-//                /* S3 저장소에 있는 이미지 삭제하기 */
-//                for (int i = 0; i < image.size(); i++) {
-//                    amazonS3Service.deleteFile(image.get(i).getFilename());
-//                }
-//            }
-//
-//            List<String>filenameList = amazonS3Service.upload(multipartFile);
-//            for (String filename : filenameList) {
-//                Image images = Image.builder()
-//                        .comment(comment)
-//                        .filename(filename)
-//                        .imageUrl(amazonS3Client.getUrl(bucket, filename).toString())
-//                        .build();
-//                imageRepository.save(images);
-//            }
-//        }
-//
-//        String imageUrl = null;
-//        String filename = null;
-//
-//        List<Image> imageResult = imageRepository.findAllByCommentId(comment.getId());
-//        List<ImageResponseDto> imageList = new ArrayList<>();
-//
-//        for(Image images : imageResult) {
-//            imageUrl = images.getImageUrl();
-//            filename = images.getFilename();
-//
-//            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl, filename);
-//            imageList.add(imageResponseDto);
-//
-//        }
-//
-//        return ResponseEntity.ok().body(CommentResponseDto.builder()
-//                .comment_id(comment.getId())
-//                .place_id(comment.getPlace().getId())
-//                .title(comment.getTitle())
-//                .content(comment.getContent())
-//                .imageList(imageList)
-//                .star(comment.getStar())
-//                .createdAt(comment.getCreatedAt())
-//                .modifiedAt(comment.getModifiedAt())
-//                .build());
-//    }
 
-
-   /* 후기 삭제하기 */
-    public ResponseEntity<Long> deleteComment(Long id) throws IOException {
+   /* ====== 후기 수정하기 ====== */
+    public ResponseEntity<CommentResponseDto> updateComment(Long comment_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile) throws IOException {
 
         /* 예외처리 추가 예정 */ /* 작성자가 맞는지 */
+
+
+        /* 후기 존재 여부 검증 */
+        Comment comment = commentRepository.findById(comment_id)
+                .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
+
+
+        /* 해당 후기의 모든 이미지 불러오기 */
+        List<Image> image = imageRepository.findAllByCommentId(comment_id);
+
+
+        /* 이미지 수정 및 재등록 기능 */
+        String imageUrl;
+        String filename;
+        /**
+         *  이미지 등록하는 경우 : checkNum = 1
+         *  이미지 등록하지 않는 경우 : checkNum = 0
+         */
+        int checkNum = 1;
+//        List<ImageRequestDto> existImageList = new ArrayList<>();
+//        List<Image> imageList = new ArrayList<>();
+        for(MultipartFile file : multipartFile) {
+            if(file.isEmpty()) checkNum = 0;
+        }
+        /* 새로 등록하는 이미지가 없는 경우 */
+        if(checkNum == 0) {
+            /* 기존 이미지가 있다면 기존 파일 유지하고 없다면 null 유지하기 */
+//            for (Image existImage : image) {
+//                imageUrl = existImage.getImageUrl();
+//                filename = existImage.getFilename();
+//                Image existImages = Image.builder()
+//                                    .comment(comment)
+//                                    .place(comment.getPlace())
+//                                    .imageUrl(imageUrl)
+//                                    .filename(filename)
+//                                    .build();
+//                imageRepository.save(existImages);
+//
+//            }
+
+        /* 새로 등록하는 이미지가 있는 경우 */
+        } else {
+            /* S3 저장소에 있는 이미지 삭제하기 */
+            for (int i=0; i<image.size(); i++) {
+                amazonS3Service.deleteFile(image.get(i).getFilename());
+            }
+
+            /* DB 이미지 삭제 */
+            imageRepository.deleteAll(image);
+
+            /* 새로운 이미지 등록 */
+            List<String> filenameList;
+            filenameList = amazonS3Service.upload(multipartFile);
+            for (String filenames : filenameList) {
+                Image images = Image.builder()
+                        .comment(comment)
+                        .place(comment.getPlace())
+                        .filename(filenames)
+                        .imageUrl(amazonS3Client.getUrl(bucket, filenames).toString())
+                        .build();
+
+                imageRepository.save(images);
+            }
+
+        }
+
+        /* 업데이트 된 이미지 목록 불러오기 */
+        List<Image> imageResult = imageRepository.findAllByCommentId(comment_id);
+        List<ImageResponseDto> imageList = new ArrayList<>();
+
+        for(Image images : imageResult) {
+            imageUrl = images.getImageUrl();
+
+            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
+            imageList.add(imageResponseDto);
+
+        }
+
+        /* 수정된 내용 저장 */
+        CommentRequestDto updateComment = CommentRequestDto.builder()
+                .title(commentRequestDto.getTitle())
+                .content(commentRequestDto.getContent())
+                .star(commentRequestDto.getStar())
+                .build();
+        comment.update(updateComment);
+        commentRepository.save(comment);
+        return ResponseEntity.ok().body(CommentResponseDto.builder()
+                .comment_id(comment.getId())
+                .place_id(comment.getPlace().getId())
+                .title(comment.getTitle())
+                .content(comment.getContent())
+                .imageList(imageList)
+                .star(comment.getStar())
+                .createdAt(comment.getCreatedAt())
+                .modifiedAt(comment.getModifiedAt())
+                .build());
+    }
+
+
+   /* ====== 후기 삭제하기 ====== */
+    public ResponseEntity<Long> deleteComment(Long id) throws IOException {
+
+        /* 예외처리 추가 예정 */
+        /* 작성자가 맞는지 */
+
+        /* 후기 존재 여부 검증 */
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
 
@@ -225,9 +261,15 @@ public class CommentService {
             amazonS3Service.deleteFile(image.get(i).getFilename());
         }
 
+        /* 후기 삭제 */
         commentRepository.delete(comment);
 
         return ResponseEntity.ok().body(id);
+    }
+
+
+    public void delete(Long comment_id) {
+        List<Image> image = imageRepository.findAllByCommentId(comment_id);
     }
 
 }

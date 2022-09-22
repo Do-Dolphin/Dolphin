@@ -4,6 +4,7 @@ import com.dolphin.demo.dto.request.ImageRequestDto;
 import com.dolphin.demo.dto.response.ImageResponseDto;
 import lombok.*;
 import javax.persistence.*;
+import java.util.List;
 
 
 @Builder
@@ -25,7 +26,7 @@ public class Image extends Timestamped {
     private String filename;
 
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id")
     private Comment comment;
 
@@ -40,8 +41,15 @@ public class Image extends Timestamped {
     }
 
 
-    public void updateImage(ImageRequestDto imageRequestDto) {
-        this.imageUrl = imageRequestDto.getImageUrl();
+    public void update(Comment comment, Place place, Image image) {
+        this.comment = comment;
+        this.place = place;
+        this.imageUrl = image.getImageUrl();
+        this.filename = image.getFilename();
     }
+
+    public void update(ImageRequestDto imageRequestDto) {
+    }
+
 
 }

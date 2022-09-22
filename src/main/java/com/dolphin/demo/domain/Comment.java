@@ -1,12 +1,9 @@
 package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.CommentRequestDto;
-import com.dolphin.demo.dto.request.PlaceRequestDto;
-import com.dolphin.demo.dto.response.ImageResponseDto;
 import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 
@@ -58,8 +55,21 @@ public class Comment extends Timestamped {
         this.imageList = imageList;
     }
 
+    public Comment(CommentRequestDto commentRequestDto, Place place) {
+        this.place = place;
+        this.title = commentRequestDto.getTitle();
+        this.content = commentRequestDto.getContent();
+        this.star = commentRequestDto.getStar();
+    }
+
+
     public void update(CommentRequestDto commentRequestDto) {
         this.title = commentRequestDto.getTitle();
         this.content = commentRequestDto.getContent();
+        this.star = commentRequestDto.getStar();
+    }
+
+    public void updateImage(List<Image> imageList) {
+        this.imageList = imageList;
     }
 }
