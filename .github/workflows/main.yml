@@ -42,12 +42,12 @@ jobs:
         echo "${{ secrets.PROPERTIES_AWS }}" > ./application-aws.properties
       shell: bash
       
-             ## create application-aws.properties
-    - name: make application-awsS3.yml
+             ## create awsS3.yml
+    - name: make awsS3.yml
       run: |
         cd ./src/main/resources
-        touch ./application-awsS3.yml
-        echo "${{ secrets.YML_AWS_S3 }}" > ./application-aws.properties
+        touch ./awsS3.yml
+        echo "${{ secrets.YML_AWS_S3 }}" > ./awsS3.yml
       shell: bash
 
 
