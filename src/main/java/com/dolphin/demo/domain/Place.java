@@ -45,9 +45,6 @@ public class Place {
   @Column(nullable = false)
   private String sigunguCode;
 
-  @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  private List<Image> imageList;
-
   @Column(nullable = false)
   private String mapX;
 
