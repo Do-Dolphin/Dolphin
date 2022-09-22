@@ -94,7 +94,7 @@ public class CommentService {
          *  이미지 등록하지 않는 경우 : checkNum = 0
          */
         int checkNum = 1;
-        List<String> filenameList = new ArrayList<>();
+        List<String> filenameList;
         for(MultipartFile file : multipartFile) {
             if(file.isEmpty()) checkNum = 0;
         }
