@@ -1,4 +1,4 @@
-package com.dolphin.demo.Controller;
+package com.dolphin.demo.controller;
 
 import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.requestDto.LoginRequestDto;

@@ -54,4 +54,12 @@ public class Place {
   @Column(nullable = false)
   private Long readCount;
 
+
+
+  @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  private List<Comment> commentList;
+
+  @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  private List<Image> imageList;
+
 }

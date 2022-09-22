@@ -1,4 +1,4 @@
-package com.dolphin.demo.Configration;
+package com.dolphin.demo.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
