@@ -23,4 +23,3 @@ hooks:
     - location: scripts/switch.sh
       timeout: 180
       runas: ec2-user
-출처: https://wbluke.tistory.com/41?category=418851 [함께 자라기:티스토리]
