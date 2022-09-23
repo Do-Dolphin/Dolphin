@@ -172,18 +172,18 @@ public class CommentService {
         /* 새로 등록하는 이미지가 없는 경우 */
         if(checkNum == 0) {
             /* 기존 이미지가 있다면 기존 파일 유지하고 없다면 null 유지하기 */
-//            for (Image existImage : image) {
-//                imageUrl = existImage.getImageUrl();
-//                filename = existImage.getFilename();
-//                Image existImages = Image.builder()
-//                                    .comment(comment)
-//                                    .place(comment.getPlace())
-//                                    .imageUrl(imageUrl)
-//                                    .filename(filename)
-//                                    .build();
-//                imageRepository.save(existImages);
-//
-//            }
+            for (Image existImage : image) {
+                imageUrl = existImage.getImageUrl();
+                filename = existImage.getFilename();
+                Image existImages = Image.builder()
+                                    .comment(comment)
+                                    .place(comment.getPlace())
+                                    .imageUrl(imageUrl)
+                                    .filename(filename)
+                                    .build();
+                imageRepository.save(existImages);
+
+            }
 
         /* 새로 등록하는 이미지가 있는 경우 */
         } else {
@@ -265,11 +265,6 @@ public class CommentService {
         commentRepository.delete(comment);
 
         return ResponseEntity.ok().body(id);
-    }
-
-
-    public void delete(Long comment_id) {
-        List<Image> image = imageRepository.findAllByCommentId(comment_id);
     }
 
 }

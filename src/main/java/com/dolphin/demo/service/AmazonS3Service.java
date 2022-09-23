@@ -58,7 +58,7 @@ public class AmazonS3Service {
             /* 이미지 리사이징을 위한 확장자명 추출 */
             String fileFormatName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
 
-            MultipartFile resizedFile = resizeImage(filename, fileFormatName, file, 750);
+            MultipartFile resizedFile = resizeImage(filename, fileFormatName, file, 800);
 
             /* objectMetaData에 파라미터로 들어온 파일의 타입 , 크기를 할당 */
             ObjectMetadata objectMetadata = new ObjectMetadata();
