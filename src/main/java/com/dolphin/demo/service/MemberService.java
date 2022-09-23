@@ -27,8 +27,8 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
-    public ResponseEntity<String> duplicateUsername(SignupRequestDto requestDto) {
-
+    public ResponseEntity<String> duplicateUsername(LoginRequestDto requestDto) {
+        System.out.println(requestDto.getUsername());
         if (memberRepository.existsByUsername(requestDto.getUsername())) {
             throw new IllegalArgumentException("중복된 이메일이 존재합니다.");
         }
@@ -39,7 +39,7 @@ public class MemberService {
 
     @Transactional
     public ResponseEntity<Member> signup(SignupRequestDto requestDto) {
-
+        System.out.println(requestDto.getUsername());
         if (!requestDto.getPassword().equals(requestDto.getPasswordConfirm())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
@@ -71,6 +71,7 @@ public class MemberService {
 
     @Transactional
     public ResponseEntity<Member> login(LoginRequestDto requestDto) {
+        System.out.println(requestDto.getUsername());
         Member member = memberRepository.findByUsername(requestDto.getUsername()).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
         );
