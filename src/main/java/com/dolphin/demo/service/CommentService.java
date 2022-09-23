@@ -89,20 +89,33 @@ public class CommentService {
 
 
         /* 이미지 등록하기 */
+
         /**
          *  이미지 등록하는 경우 : checkNum = 1
          *  이미지 등록하지 않는 경우 : checkNum = 0
          */
         int checkNum = 1;
         List<String> filenameList;
-        for(MultipartFile file : multipartFile) {
-            if(file.isEmpty()) checkNum = 0;
+        List<ImageResponseDto> imageList = new ArrayList<>();
+
+        for (MultipartFile file : multipartFile) {
+            if( file.isEmpty()) checkNum = 0;
         }
 
-        /* 이미지 등록하는 경우 */
-        /* 파일을 업로드 후 url과 filename을 리스트로 저장 */
-        if(checkNum == 1) {
+        if (checkNum == 0) {
+            return ResponseEntity.ok().body(CommentResponseDto.builder()
+                    .comment_id(comment.getId())
+                    .place_id(comment.getPlace().getId())
+                    .title(comment.getTitle())
+                    .content(comment.getContent())
+                    .imageList(imageList)
+                    .star(comment.getStar())
+                    .createdAt(comment.getCreatedAt())
+                    .modifiedAt(comment.getModifiedAt())
+                    .build());
 
+        } else {
+            /* 파일을 업로드 후 url과 filename을 리스트로 저장 */
             filenameList = amazonS3Service.upload(multipartFile);
             for (String filename : filenameList) {
                 Image image = Image.builder()
@@ -113,19 +126,18 @@ public class CommentService {
                         .build();
                 imageRepository.save(image);
             }
+
+            /* 저장된 정보에서 imageUrl List 추출 */
+            List<Image> imageResult = imageRepository.findAllByCommentId(comment.getId());
+
+            for (Image images : imageResult) {
+                String imageUrl = images.getImageUrl();
+
+                ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
+                imageList.add(imageResponseDto);
+            }
         }
 
-        /* 저장된 정보에서 imageUrl List 추출 */
-        List<Image> imageResult = imageRepository.findAllByCommentId(comment.getId());
-        List<ImageResponseDto> imageList = new ArrayList<>();
-
-        for(Image images : imageResult) {
-            String imageUrl = images.getImageUrl();
-
-            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
-            imageList.add(imageResponseDto);
-
-        } //확인!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! new ImageResponseDto(imageUrl)
 
         return ResponseEntity.ok().body(CommentResponseDto.builder()
                 .comment_id(comment.getId())
@@ -138,10 +150,10 @@ public class CommentService {
                 .modifiedAt(comment.getModifiedAt())
                 .build());
 
-   }
+    }
 
 
-   /* ====== 후기 수정하기 ====== */
+    /* ====== 후기 수정하기 ====== */
     public ResponseEntity<CommentResponseDto> updateComment(Long comment_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile) throws IOException {
 
         /* 예외처리 추가 예정 */ /* 작성자가 맞는지 */
@@ -156,36 +168,62 @@ public class CommentService {
         List<Image> image = imageRepository.findAllByCommentId(comment_id);
 
 
+        /* 수정된 내용 저장 */
+        CommentRequestDto updateComment = CommentRequestDto.builder()
+                .title(commentRequestDto.getTitle())
+                .content(commentRequestDto.getContent())
+                .star(commentRequestDto.getStar())
+                .build();
+        comment.update(updateComment);
+        commentRepository.save(comment);
+
         /* 이미지 수정 및 재등록 기능 */
         String imageUrl;
         String filename;
+        List<ImageResponseDto> imageList = new ArrayList<>();
+
         /**
          *  이미지 등록하는 경우 : checkNum = 1
          *  이미지 등록하지 않는 경우 : checkNum = 0
          */
         int checkNum = 1;
-//        List<ImageRequestDto> existImageList = new ArrayList<>();
-//        List<Image> imageList = new ArrayList<>();
         for(MultipartFile file : multipartFile) {
             if(file.isEmpty()) checkNum = 0;
         }
-        /* 새로 등록하는 이미지가 없는 경우 */
+
         if(checkNum == 0) {
             /* 기존 이미지가 있다면 기존 파일 유지하고 없다면 null 유지하기 */
             for (Image existImage : image) {
                 imageUrl = existImage.getImageUrl();
                 filename = existImage.getFilename();
                 Image existImages = Image.builder()
-                                    .comment(comment)
-                                    .place(comment.getPlace())
-                                    .imageUrl(imageUrl)
-                                    .filename(filename)
-                                    .build();
+                        .comment(comment)
+                        .place(comment.getPlace())
+                        .imageUrl(imageUrl)
+                        .filename(filename)
+                        .build();
                 imageRepository.save(existImages);
-
             }
 
-        /* 새로 등록하는 이미지가 있는 경우 */
+            for(Image images : image) {
+                imageUrl = images.getImageUrl();
+
+                ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
+                imageList.add(imageResponseDto);
+
+            }
+            return ResponseEntity.ok().body(CommentResponseDto.builder()
+                    .comment_id(comment.getId())
+                    .place_id(comment.getPlace().getId())
+                    .title(comment.getTitle())
+                    .content(comment.getContent())
+                    .imageList(imageList)
+                    .star(comment.getStar())
+                    .createdAt(comment.getCreatedAt())
+                    .modifiedAt(comment.getModifiedAt())
+                    .build());
+
+            /* 새로 등록하는 이미지가 있는 경우 */
         } else {
             /* S3 저장소에 있는 이미지 삭제하기 */
             for (int i=0; i<image.size(); i++) {
@@ -208,29 +246,17 @@ public class CommentService {
 
                 imageRepository.save(images);
             }
+            /* 업데이트 된 이미지 목록 불러오기 */
+            List<Image> imageResult = imageRepository.findAllByCommentId(comment_id);
 
+            for(Image images : imageResult) {
+                imageUrl = images.getImageUrl();
+
+                ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
+                imageList.add(imageResponseDto);
+            }
         }
 
-        /* 업데이트 된 이미지 목록 불러오기 */
-        List<Image> imageResult = imageRepository.findAllByCommentId(comment_id);
-        List<ImageResponseDto> imageList = new ArrayList<>();
-
-        for(Image images : imageResult) {
-            imageUrl = images.getImageUrl();
-
-            ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
-            imageList.add(imageResponseDto);
-
-        }
-
-        /* 수정된 내용 저장 */
-        CommentRequestDto updateComment = CommentRequestDto.builder()
-                .title(commentRequestDto.getTitle())
-                .content(commentRequestDto.getContent())
-                .star(commentRequestDto.getStar())
-                .build();
-        comment.update(updateComment);
-        commentRepository.save(comment);
         return ResponseEntity.ok().body(CommentResponseDto.builder()
                 .comment_id(comment.getId())
                 .place_id(comment.getPlace().getId())
