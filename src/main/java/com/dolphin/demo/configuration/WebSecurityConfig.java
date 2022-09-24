@@ -1,4 +1,4 @@
-package com.dolphin.demo.Configration;
+package com.dolphin.demo.configuration;
 
 import com.dolphin.demo.jwt.JwtAuthenticationFilter;
 import com.dolphin.demo.jwt.JwtExceptionFilter;

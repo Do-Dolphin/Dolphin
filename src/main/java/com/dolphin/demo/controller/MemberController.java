@@ -24,7 +24,7 @@ public class MemberController {
 
     //중복 아이디(이메일) 확인
     @PostMapping("/api/member/duplicate")
-    public ResponseEntity<String> duplicateUsername(@Valid @RequestBody SignupRequestDto requestDto) {
+    public ResponseEntity<String> duplicateUsername(@Valid @RequestBody LoginRequestDto requestDto) {
         return memberService.duplicateUsername(requestDto);
     }
 
