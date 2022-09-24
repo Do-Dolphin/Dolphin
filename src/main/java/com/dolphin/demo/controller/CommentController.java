@@ -1,10 +1,14 @@
 package com.dolphin.demo.controller;
 
+import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
+import com.dolphin.demo.jwt.UserDetailsImpl;
+import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -17,6 +21,7 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
+    private final MemberRepository memberRepository;
 
     /* 여행지 상세페이지의 후기 전체 조회 */
     @GetMapping("/comment/{place_id}")
@@ -54,4 +59,5 @@ public class CommentController {
 
         return ResponseEntity.ok().body("Delete comment_id : " + id);
     }
+
 }
