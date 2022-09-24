@@ -3,6 +3,7 @@ package com.dolphin.demo.controller;
 import com.dolphin.demo.dto.response.PlaceListResponseDto;
 import com.dolphin.demo.dto.response.PlaceResponseDto;
 import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
+import com.dolphin.demo.dto.response.RankListResponseDto;
 import com.dolphin.demo.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,4 +28,15 @@ public class PlaceController {
     public ResponseEntity<RandomPlaceResponseDto> randomPlace(){
         return placeService.randomPlace();
     }
+
+    @GetMapping("api/place/rank")
+    public ResponseEntity<RankListResponseDto> getRank(){
+        return ResponseEntity.ok(RankListResponseDto.builder()
+                .tourList(placeService.getRank(12))
+                .museumList(placeService.getRank(14))
+                .activityList(placeService.getRank(28))
+                .foodList(placeService.getRank(39))
+                .build());
+    }
+
 }

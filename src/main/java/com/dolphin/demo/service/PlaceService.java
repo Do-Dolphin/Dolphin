@@ -1,11 +1,10 @@
 package com.dolphin.demo.service;
 
-import com.dolphin.demo.domain.Comment;
 import com.dolphin.demo.domain.Image;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.response.PlaceListResponseDto;
-import com.dolphin.demo.dto.response.PlaceResponseDto;
 import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
+import com.dolphin.demo.dto.response.RankListResponseDto;
 import com.dolphin.demo.repository.ImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
@@ -166,6 +165,31 @@ public class PlaceService {
 
     }
 
+
+
+    public List<PlaceListResponseDto> getRank(int theme){
+        PageRequest pageRequest = PageRequest.of(1, 10);
+        List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
+        List<Place> placeList = placeRepository.findAllByThemeOrderByReadCountDesc(String.valueOf(theme),pageRequest);
+        for (Place place : placeList) {
+            Image img = imageRepository.findByPlaceId(place.getId());
+            if (img != null)
+                responseDtoList.add(PlaceListResponseDto.builder()
+                        .id(place.getId())
+                        .title(place.getTitle())
+                        .star(place.getStar())
+                        .image(img.getImageUrl())
+                        .build());
+            else
+                responseDtoList.add(PlaceListResponseDto.builder()
+                        .id(place.getId())
+                        .title(place.getTitle())
+                        .star(place.getStar())
+                        .build());
+        }
+        return responseDtoList;
+
+    }
 
 
 
