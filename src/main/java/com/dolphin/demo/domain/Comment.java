@@ -69,7 +69,4 @@ public class Comment extends Timestamped {
         this.star = commentRequestDto.getStar();
     }
 
-    public void updateImage(List<Image> imageList) {
-        this.imageList = imageList;
-    }
 }

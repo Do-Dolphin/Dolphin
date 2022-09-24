@@ -45,28 +45,27 @@ public class AmazonS3Service {
     private String region;
 
 
-    /* 이미지 업로드 기능 */
+    // 이미지 업로드 기능
     @Transactional
     public List<String> upload(List<MultipartFile> multipartFiles) throws IOException {
-        /* 이미지 파일인지 여부 검증 */
+        // 이미지 파일인지 여부 검증
         isImage(multipartFiles);
 
         List<String> filenameList = new ArrayList<>();
         multipartFiles.forEach(file -> {
-            /* 고유한 파일 이름 생성 */
+            // 고유한 파일 이름 생성
             String filename = createFilename(file.getOriginalFilename());
-            /* 이미지 리사이징을 위한 확장자명 추출 */
+            // 이미지 리사이징을 위한 확장자명 추출
             String fileFormatName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
 
             MultipartFile resizedFile = resizeImage(filename, fileFormatName, file, 800);
 
-            /* objectMetaData에 파라미터로 들어온 파일의 타입 , 크기를 할당 */
+            // objectMetaData에 파라미터로 들어온 파일의 타입 , 크기를 할당
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentLength(resizedFile.getSize());
             objectMetadata.setContentType(file.getContentType());
-            System.out.println(resizedFile.getSize());
 
-            /* S3객체의 putObject 메서드로 파일 업로드 */
+            // S3객체의 putObject 메서드로 파일 업로드
             try (InputStream inputStream = resizedFile.getInputStream()) {
                 amazonS3Client.putObject(new PutObjectRequest(bucket, filename, inputStream, objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
@@ -80,7 +79,7 @@ public class AmazonS3Service {
     }
 
 
-    /* 이미지 삭제 기능 */
+    // 이미지 삭제 기능
     @Transactional
     public void deleteFile(String filename) {
         final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(region).build();
@@ -88,17 +87,17 @@ public class AmazonS3Service {
     }
 
 
-    /* 고유한 파일 이름 생성 */
+    // 고유한 파일 이름 생성
     public String createFilename(String filename) {
         return UUID.randomUUID().toString().concat(filename);
     }
 
 
-    /* 이미지 파일인지 확인하는 메소드 */
+    // 이미지 파일인지 확인하는 메소드
     private void isImage(List<MultipartFile> multipartFile) throws IOException {
 
-        /* tika를 이용해 파일 MIME 타입 체크 */
-        /* 파일명에 .jpg 식으로 붙는 확장자는 없앨 수도 있고 조작도 가능하므로 MIME 타입을 체크 */
+        /* tika를 이용해 파일 MIME 타입 체크
+        / 파일명에 .jpg 식으로 붙는 확장자는 없앨 수도 있고 조작도 가능하므로 MIME 타입을 체크 */
         Tika tika = new Tika();
         for (int i = 0; i < multipartFile.size(); i++) {
             String mimeType = tika.detect(multipartFile.get(i).getInputStream());
@@ -110,16 +109,16 @@ public class AmazonS3Service {
     }
 
 
-    /* 이미지 리사이징 */
+    // 이미지 리사이징
     MultipartFile resizeImage(String filename, String fileFormatName, MultipartFile originalImage, int targetWidth) {
         try {
-            /* MultipartFile을 BufferedImage로 변환 */
+            // MultipartFile을 BufferedImage로 변환
             BufferedImage image = ImageIO.read(originalImage.getInputStream());
-            /* newWidth : newHeight = originWidth : originHeight */
+            // newWidth : newHeight = originWidth : originHeight
             int originWidth = image.getWidth();
             int originHeight = image.getHeight();
 
-            /* origin 이미지가 resizing될 사이즈보다 작을 경우 resizing 작업 안 함 */
+            // origin 이미지가 resizing될 사이즈보다 작을 경우 resizing 작업 안 함
             if (originWidth < targetWidth)
                 return originalImage;
 

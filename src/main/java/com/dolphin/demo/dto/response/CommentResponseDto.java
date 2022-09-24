@@ -20,9 +20,8 @@ public class CommentResponseDto {
     private String title;
     private String content;
 
-    private List<ImageResponseDto> imageList;
+    private List<String> imageList;
 //    private String nickname;
-
     private int star;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;

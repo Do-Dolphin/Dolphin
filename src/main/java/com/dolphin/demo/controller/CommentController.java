@@ -23,14 +23,14 @@ public class CommentController {
     private final CommentService commentService;
     private final MemberRepository memberRepository;
 
-    /* 여행지 상세페이지의 후기 전체 조회 */
+    // 여행지 상세페이지의 후기 전체 조회
     @GetMapping("/comment/{place_id}")
     public ResponseEntity<List<CommentResponseDto>> getComment(@PathVariable Long place_id) {
 
         return commentService.getComment(place_id);
     }
 
-    /* 후기 작성 */
+    // 후기 작성
     @PostMapping("/auth/comment/{place_id}")
     public ResponseEntity<CommentResponseDto> createComment(@PathVariable Long place_id,
                                                             @RequestPart(value = "data") CommentRequestDto commentRequestDto,
@@ -41,7 +41,7 @@ public class CommentController {
     }
 
 
-    /* 후기 수정 */
+    // 후기 수정
     @PutMapping("/auth/comment/{id}")
     public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id,
                                                             @RequestPart(value = "data") CommentRequestDto commentRequestDto,
@@ -51,7 +51,7 @@ public class CommentController {
     }
 
 
-    /* 후기 삭제 */
+    // 후기 삭제
     @DeleteMapping("/auth/comment/{id}")
     public ResponseEntity<String> deleteComment(@PathVariable Long id) throws IOException {
 

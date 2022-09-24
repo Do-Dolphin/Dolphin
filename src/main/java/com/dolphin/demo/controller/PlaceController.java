@@ -20,12 +20,16 @@ public class PlaceController {
     private final PlaceService placeService;
 
     @GetMapping("/api/place")
-    public ResponseEntity<List<PlaceListResponseDto>> getPlace(@RequestParam("theme") String theme, @RequestParam("areaCode") String areaCode, @RequestParam("sigunguCode") String sigunguCode, @RequestParam("pageNum") String pageNum){
+    public ResponseEntity<List<PlaceListResponseDto>> getPlace(@RequestParam("theme") String theme,
+                                                               @RequestParam("areaCode") String areaCode,
+                                                               @RequestParam("sigunguCode") String sigunguCode,
+                                                               @RequestParam("pageNum") String pageNum){
         return placeService.getPlace(theme, areaCode, sigunguCode, pageNum);
     }
 
     @GetMapping("/api/place/random")
     public ResponseEntity<RandomPlaceResponseDto> randomPlace(){
+
         return placeService.randomPlace();
     }
 
