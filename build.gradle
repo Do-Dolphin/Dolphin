@@ -30,7 +30,8 @@ dependencies {
     // 이미지 리사이징을 위한 marvin 디펜던시
     implementation 'com.github.downgoon:marvin:1.5.5'
     implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
-    compileOnly group: 'org.springframework', name: 'spring-test'
+    implementation group: 'org.springframework', name: 'spring-test'
+    implementation group: 'org.springframework', name: 'spring-mock', version: '2.0.8'
 
     // Tika (이미지 파일만 업로드 할 수 있게 확장자 구별)
     implementation group: 'org.apache.tika', name: 'tika-core', version: '1.24.1'
