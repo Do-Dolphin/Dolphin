@@ -8,15 +8,22 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import marvin.image.MarvinImage;
 import org.apache.tika.Tika;
+import org.marvinproject.image.transform.scale.Scale;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -48,13 +55,19 @@ public class AmazonS3Service {
         multipartFiles.forEach(file -> {
             /* 고유한 파일 이름 생성 */
             String filename = createFilename(file.getOriginalFilename());
+            /* 이미지 리사이징을 위한 확장자명 추출 */
+            String fileFormatName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+
+            MultipartFile resizedFile = resizeImage(filename, fileFormatName, file, 800);
+
             /* objectMetaData에 파라미터로 들어온 파일의 타입 , 크기를 할당 */
             ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentLength(file.getSize());
+            objectMetadata.setContentLength(resizedFile.getSize());
             objectMetadata.setContentType(file.getContentType());
+            System.out.println(resizedFile.getSize());
 
             /* S3객체의 putObject 메서드로 파일 업로드 */
-            try (InputStream inputStream = file.getInputStream()) {
+            try (InputStream inputStream = resizedFile.getInputStream()) {
                 amazonS3Client.putObject(new PutObjectRequest(bucket, filename, inputStream, objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
             } catch (IOException e) {
@@ -93,6 +106,40 @@ public class AmazonS3Service {
             if (!mimeType.startsWith("image/")) {
                 throw new IllegalStateException("이미지 파일이 아닙니다");
             }
+        }
+    }
+
+
+    /* 이미지 리사이징 */
+    MultipartFile resizeImage(String filename, String fileFormatName, MultipartFile originalImage, int targetWidth) {
+        try {
+            /* MultipartFile을 BufferedImage로 변환 */
+            BufferedImage image = ImageIO.read(originalImage.getInputStream());
+            /* newWidth : newHeight = originWidth : originHeight */
+            int originWidth = image.getWidth();
+            int originHeight = image.getHeight();
+
+            /* origin 이미지가 resizing될 사이즈보다 작을 경우 resizing 작업 안 함 */
+            if (originWidth < targetWidth)
+                return originalImage;
+
+            MarvinImage imageMarvin = new MarvinImage(image);
+
+            Scale scale = new Scale();
+            scale.load();
+            scale.setAttribute("newWidth", targetWidth);
+            scale.setAttribute("newHeight", targetWidth * originHeight / originWidth);
+            scale.process(imageMarvin.clone(), imageMarvin, null, null, false);
+
+            BufferedImage imageNoAlpha = imageMarvin.getBufferedImageNoAlpha();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(imageNoAlpha, fileFormatName, baos);
+            baos.flush();
+
+            return new MockMultipartFile(filename, baos.toByteArray());
+
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 리사이즈에 실패했습니다.");
         }
     }
 

@@ -37,6 +37,6 @@ out/
 .vscode/
 
 ### AWS S3 ###
-aws-s3.yml
+awsS3.yml
 
 
