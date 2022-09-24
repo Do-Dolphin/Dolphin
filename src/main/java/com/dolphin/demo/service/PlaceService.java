@@ -4,7 +4,6 @@ import com.dolphin.demo.domain.Image;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.response.PlaceListResponseDto;
 import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
-import com.dolphin.demo.dto.response.RankListResponseDto;
 import com.dolphin.demo.repository.ImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +36,6 @@ public class PlaceService {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode,sigunguCode,theme,pageRequest);
         for (Place place : placeList) {
-            System.out.println(place.getId());
             Image img = imageRepository.findByPlaceId(place.getId());
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
@@ -57,10 +55,12 @@ public class PlaceService {
         return ResponseEntity.ok(responseDtoList);
     }
 
+
     public ResponseEntity<RandomPlaceResponseDto> randomPlace(){
         List<PlaceListResponseDto> randomList = new ArrayList<>();
         int areaCode = (int) (Math.random() * 17 + 1);
         int sigunguCode;
+        String[] themes = {"12","14","28","39"};
         String area;
             if (areaCode > 8) {
                 areaCode += 22;
@@ -71,17 +71,16 @@ public class PlaceService {
                     if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaCode), String.valueOf(sigunguCode)))
                         break;
                 }
-                randomList.add(randomSigungu(String.valueOf(areaCode),String.valueOf(sigunguCode),"12"));
-                randomList.add(randomSigungu(String.valueOf(areaCode),String.valueOf(sigunguCode),"14"));
-                randomList.add(randomSigungu(String.valueOf(areaCode),String.valueOf(sigunguCode),"28"));
-                randomList.add(randomSigungu(String.valueOf(areaCode),String.valueOf(sigunguCode),"39"));
-                area =getArea(randomList.get(0),1);
-            } else{
-                randomList.add(randomArea(String.valueOf(areaCode),"12"));
-                randomList.add(randomArea(String.valueOf(areaCode),"14"));
-                randomList.add(randomArea(String.valueOf(areaCode),"28"));
-                randomList.add(randomArea(String.valueOf(areaCode),"39"));
-                area =getArea(randomList.get(0),0);
+                for (String theme : themes)
+                    randomList.add(randomSigungu(String.valueOf(areaCode), String.valueOf(sigunguCode), theme));
+
+                area = getArea(randomList.get(0), 1);
+            }
+            else{
+                for (String theme:themes)
+                    randomList.add(randomArea(String.valueOf(areaCode), theme));
+                area = getArea(randomList.get(0), 0);
+
             }
 
 
@@ -208,19 +207,14 @@ public class PlaceService {
 
 
     @PostConstruct
-    public void updatePlace(){
-        int i = 1;
-        while (savePlace("12",i))
-            i++;
-        i = 1;
-        while (savePlace("14",i))
-            i++;
-        i = 1;
-        while (savePlace("28",i))
-            i++;
-        i = 1;
-        while (savePlace("39",i))
-            i++;
+    public void downloadPlace() {
+        String[] themes = {"12", "14", "28", "39"};
+        for (String theme : themes) {
+            int i = 1;
+            while (savePlace(theme, i))
+                i++;
+            System.out.println("theme "+theme+" end");
+        }
         System.out.println("end");
     }
 
@@ -319,7 +313,6 @@ public class PlaceService {
         }
         placeRepository.saveAll(places);
         imageRepository.saveAll(imageList);
-        System.out.println("save method end");
             return totalCount > pageNum * 7000;
         }
 }

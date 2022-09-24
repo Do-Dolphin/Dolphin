@@ -20,10 +20,10 @@ public class Place {
   @Column(name = "place_id")
   private Long id;
 
-  // 도착 공항
+
   @Column(nullable = false)
   private String title;
-  // 출발 공항
+
   @Column(nullable = false)
   private String content;
 
@@ -53,8 +53,6 @@ public class Place {
 
   @Column(nullable = false)
   private Long readCount;
-
-
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private List<Comment> commentList;

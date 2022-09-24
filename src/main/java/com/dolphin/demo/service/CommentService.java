@@ -6,7 +6,6 @@ import com.dolphin.demo.domain.Image;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
-import com.dolphin.demo.dto.response.ImageResponseDto;
 import com.dolphin.demo.repository.CommentRepository;
 import com.dolphin.demo.repository.ImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
@@ -48,14 +47,11 @@ public class CommentService {
         for (Comment comments : commentList) {
             /* 후기별 이미지 리스트 꺼내오기 */
             List<Image> imageResult = imageRepository.findAllByCommentId(comments.getId());
-            List<ImageResponseDto> imageList = new ArrayList<>();
+            List<String> imageList = new ArrayList<>();
             /* 꺼내온 이미지들을 imageList에 담기 */
 
             for(Image images : imageResult) {
-                ImageResponseDto imageResponseDto = ImageResponseDto.builder()
-                        .imageUrl(images.getImageUrl())
-                        .build();
-                imageList.add(imageResponseDto);
+                imageList.add(images.getImageUrl());
             }
 
             CommentResponseDto commentResponseDto = CommentResponseDto.builder()
@@ -94,15 +90,11 @@ public class CommentService {
          *  이미지 등록하는 경우 : checkNum = 1
          *  이미지 등록하지 않는 경우 : checkNum = 0
          */
-        int checkNum = 1;
+
         List<String> filenameList;
-        List<ImageResponseDto> imageList = new ArrayList<>();
+        List<String> imageList = new ArrayList<>();
 
-        for (MultipartFile file : multipartFile) {
-            if( file.isEmpty()) checkNum = 0;
-        }
-
-        if (checkNum == 0) {
+        if(multipartFile.get(0).isEmpty()) {
             return ResponseEntity.ok().body(CommentResponseDto.builder()
                     .comment_id(comment.getId())
                     .place_id(comment.getPlace().getId())
@@ -113,10 +105,11 @@ public class CommentService {
                     .createdAt(comment.getCreatedAt())
                     .modifiedAt(comment.getModifiedAt())
                     .build());
+        }
 
-        } else {
             /* 파일을 업로드 후 url과 filename을 리스트로 저장 */
             filenameList = amazonS3Service.upload(multipartFile);
+            List<Image> saveImages = new ArrayList<>();
             for (String filename : filenameList) {
                 Image image = Image.builder()
                         .comment(comment)
@@ -124,19 +117,11 @@ public class CommentService {
                         .filename(filename)
                         .imageUrl(amazonS3Client.getUrl(bucket, filename).toString())
                         .build();
-                imageRepository.save(image);
+
+                saveImages.add(image);
+                imageList.add(image.getImageUrl());
             }
-
-            /* 저장된 정보에서 imageUrl List 추출 */
-            List<Image> imageResult = imageRepository.findAllByCommentId(comment.getId());
-
-            for (Image images : imageResult) {
-                String imageUrl = images.getImageUrl();
-
-                ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
-                imageList.add(imageResponseDto);
-            }
-        }
+            imageRepository.saveAll(saveImages);
 
 
         return ResponseEntity.ok().body(CommentResponseDto.builder()
@@ -150,7 +135,9 @@ public class CommentService {
                 .modifiedAt(comment.getModifiedAt())
                 .build());
 
+
     }
+
 
 
     /* ====== 후기 수정하기 ====== */
@@ -180,7 +167,7 @@ public class CommentService {
         /* 이미지 수정 및 재등록 기능 */
         String imageUrl;
         String filename;
-        List<ImageResponseDto> imageList = new ArrayList<>();
+        List<String> imageList = new ArrayList<>();
 
         /**
          *  이미지 등록하는 경우 : checkNum = 1
@@ -208,8 +195,8 @@ public class CommentService {
             for(Image images : image) {
                 imageUrl = images.getImageUrl();
 
-                ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
-                imageList.add(imageResponseDto);
+                String String = new String(imageUrl);
+                imageList.add(String);
 
             }
             return ResponseEntity.ok().body(CommentResponseDto.builder()
@@ -252,8 +239,8 @@ public class CommentService {
             for(Image images : imageResult) {
                 imageUrl = images.getImageUrl();
 
-                ImageResponseDto imageResponseDto = new ImageResponseDto(imageUrl);
-                imageList.add(imageResponseDto);
+                String String = new String(imageUrl);
+                imageList.add(String);
             }
         }
 
