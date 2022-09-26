@@ -1,7 +1,6 @@
 package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.ImageRequestDto;
-import com.dolphin.demo.dto.response.ImageResponseDto;
 import lombok.*;
 import javax.persistence.*;
 import java.util.List;
@@ -36,9 +35,7 @@ public class Image extends Timestamped {
     private Place place;
 
 
-    public Image(ImageResponseDto imageResponseDto) {
-        this.imageUrl = imageResponseDto.getImageUrl();
-    }
+
 
 
     public void update(Comment comment, Place place, Image image) {

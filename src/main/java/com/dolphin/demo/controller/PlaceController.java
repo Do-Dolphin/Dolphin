@@ -8,6 +8,7 @@ import com.dolphin.demo.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,12 +21,16 @@ public class PlaceController {
     private final PlaceService placeService;
 
     @GetMapping("/api/place")
-    public ResponseEntity<List<PlaceListResponseDto>> getPlace(@RequestParam("theme") String theme, @RequestParam("areaCode") String areaCode, @RequestParam("sigunguCode") String sigunguCode, @RequestParam("pageNum") String pageNum){
+    public ResponseEntity<List<PlaceListResponseDto>> getPlace(@RequestParam("theme") String theme,
+                                                               @RequestParam("areaCode") String areaCode,
+                                                               @RequestParam("sigunguCode") String sigunguCode,
+                                                               @RequestParam("pageNum") String pageNum){
         return placeService.getPlace(theme, areaCode, sigunguCode, pageNum);
     }
 
-    @GetMapping("/api/place/random")
+    @GetMapping("/api/auth/place/random")
     public ResponseEntity<RandomPlaceResponseDto> randomPlace(){
+
         return placeService.randomPlace();
     }
 
@@ -37,6 +42,11 @@ public class PlaceController {
                 .activityList(placeService.getRank(28))
                 .foodList(placeService.getRank(39))
                 .build());
+    }
+
+    @GetMapping("api/place/{id}")
+    public ResponseEntity<PlaceResponseDto> getPlaceDetail(@PathVariable Long id) {
+        return placeService.getPlaceDetail(id);
     }
 
 }
