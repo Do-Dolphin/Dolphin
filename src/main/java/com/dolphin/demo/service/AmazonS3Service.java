@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -152,6 +151,4 @@ public class AmazonS3Service {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 리사이즈에 실패했습니다.");
         }
     }
-
 }
-

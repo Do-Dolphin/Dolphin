@@ -59,12 +59,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
 
                 .antMatchers(HttpMethod.OPTIONS, "/**/*").permitAll()
-                .anyRequest().permitAll()
-                //임시로 모든 요청 허용
 
                 // 회원 관리 처리 API 전부를 login 없이 허용
-//                .antMatchers("/member/*").permitAll()
-//                .anyRequest().authenticated()
+                .antMatchers("/api/member/*").permitAll()
+                .antMatchers("/api/comment/**").permitAll()
+                .antMatchers("/api/place/**").permitAll()
+                .anyRequest().authenticated()
                 // 그 외 어떤 요청이든 '인증'
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)

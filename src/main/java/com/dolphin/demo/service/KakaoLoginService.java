@@ -54,7 +54,7 @@ public class KakaoLoginService {
         //  5. response Header에 JWT 토큰 추가
         memberService.tokensProcess(kakaoMember.getUsername());
 
-        String message = kakaoMember.getNickname()+"님 환영합니다.";
+        String message = kakaoMember.getNickname()+" 방문을 환영합니다.";
 
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
@@ -126,14 +126,17 @@ public class KakaoLoginService {
 
         //DB에 중복 계정이 없으면 회원가입 처리
         if (findKakao == null) {
-            String nickName = kakaoUserInfoDto.getNickname();
             String email = kakaoUserInfoDto.getEmail();
             String password = UUID.randomUUID().toString();
             String encodedPassword = passwordEncoder.encode(password);
+            String nickname = memberService.rendomNickname();
+            while (null != memberRepository.findByNickname(nickname).orElse(null)){
+             nickname = memberService.rendomNickname();
+            }
             Member kakaoMember = Member.builder()
                     .username(email)
-                    .nickname(nickName)
                     .password(encodedPassword)
+                    .nickname(nickname)
                     .build();
             memberRepository.save(kakaoMember);
 

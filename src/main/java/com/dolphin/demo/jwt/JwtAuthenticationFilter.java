@@ -20,8 +20,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-//        response.setContentType("application/json");
-//        response.setCharacterEncoding("utf-8");
+
         // 헤더에서 jwt 토큰 받아옴
         String token = jwtTokenProvider.resolveToken((HttpServletRequest) request);
 

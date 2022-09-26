@@ -1,7 +1,7 @@
 package com.dolphin.demo.service;
 
-import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.domain.PlaceImage;
+import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.response.PlaceListResponseDto;
 import com.dolphin.demo.dto.response.PlaceResponseDto;
 import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
@@ -310,7 +310,7 @@ public class PlaceService {
         placeRepository.saveAll(places);
         imageRepository.saveAll(imageList);
         System.out.println("save end");
-    }
+    }}
 
 
 
@@ -425,5 +425,4 @@ public class PlaceService {
 //        imageRepository.saveAll(imageList);
 //        System.out.println("save method end");
 //            return totalCount > pageNum * 7000;
-//        }
-}
+//

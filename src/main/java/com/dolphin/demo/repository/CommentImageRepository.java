@@ -9,5 +9,4 @@ public interface CommentImageRepository extends JpaRepository<CommentImage, Long
 
     List<CommentImage> findAllByCommentId(Long comment_id);
 
-
 }
