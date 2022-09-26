@@ -1,4 +1,4 @@
-package com.dolphin.demo.dto.requestDto;
+package com.dolphin.demo.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
