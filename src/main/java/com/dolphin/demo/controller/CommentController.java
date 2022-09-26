@@ -34,10 +34,11 @@ public class CommentController {
     @PostMapping("/auth/comment/{place_id}")
     public ResponseEntity<CommentResponseDto> createComment(@PathVariable Long place_id,
                                                             @RequestPart(value = "data") CommentRequestDto commentRequestDto,
-                                                            @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile) throws IOException {
+                                                            @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile,
+                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
 
 
-        return commentService.createComment(place_id, commentRequestDto, multipartFile);
+        return commentService.createComment(place_id, commentRequestDto, multipartFile, userDetails);
     }
 
 
@@ -45,17 +46,19 @@ public class CommentController {
     @PutMapping("/auth/comment/{id}")
     public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id,
                                                             @RequestPart(value = "data") CommentRequestDto commentRequestDto,
-                                                            @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile) throws IOException {
+                                                            @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile,
+                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
 
-        return commentService.updateComment(id, commentRequestDto, multipartFile);
+        return commentService.updateComment(id, commentRequestDto, multipartFile, userDetails);
     }
 
 
     // 후기 삭제
     @DeleteMapping("/auth/comment/{id}")
-    public ResponseEntity<String> deleteComment(@PathVariable Long id) throws IOException {
+    public ResponseEntity<String> deleteComment(@PathVariable Long id,
+                                                @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
 
-        commentService.deleteComment(id);
+        commentService.deleteComment(id, userDetails);
 
         return ResponseEntity.ok().body("Delete comment_id : " + id);
     }
