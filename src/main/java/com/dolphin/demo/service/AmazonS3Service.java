@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,14 +49,18 @@ public class AmazonS3Service {
     // 이미지 업로드 기능
     @Transactional
     public List<String> upload(List<MultipartFile> multipartFiles) throws IOException {
+
+        if (multipartFiles.get(0).isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // 이미지 파일인지 여부 검증
         isImage(multipartFiles);
 
-        List<String> filenameList = new ArrayList<>();
+        List<String> imageUrlList = new ArrayList<>();
         multipartFiles.forEach(file -> {
-            // 고유한 파일 이름 생성
+            /* 고유한 파일 이름 생성 */
             String filename = createFilename(file.getOriginalFilename());
-            // 이미지 리사이징을 위한 확장자명 추출
             String fileFormatName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
 
             MultipartFile resizedFile = resizeImage(filename, fileFormatName, file, 800);
@@ -73,9 +78,9 @@ public class AmazonS3Service {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
             }
 
-            filenameList.add(filename);
+            imageUrlList.add(amazonS3Client.getUrl(bucket, filename).toString());
         });
-        return filenameList;
+        return imageUrlList;
     }
 
 
@@ -97,7 +102,7 @@ public class AmazonS3Service {
     private void isImage(List<MultipartFile> multipartFile) throws IOException {
 
         /* tika를 이용해 파일 MIME 타입 체크
-        / 파일명에 .jpg 식으로 붙는 확장자는 없앨 수도 있고 조작도 가능하므로 MIME 타입을 체크 */
+          파일명에 .jpg 식으로 붙는 확장자는 없앨 수도 있고 조작도 가능하므로 MIME 타입을 체크 */
         Tika tika = new Tika();
         for (int i = 0; i < multipartFile.size(); i++) {
             String mimeType = tika.detect(multipartFile.get(i).getInputStream());
@@ -112,7 +117,7 @@ public class AmazonS3Service {
     // 이미지 리사이징
     MultipartFile resizeImage(String filename, String fileFormatName, MultipartFile originalImage, int targetWidth) {
         try {
-            // MultipartFile을 BufferedImage로 변환
+            // MultipartFile -> BufferedImage Convert
             BufferedImage image = ImageIO.read(originalImage.getInputStream());
             // newWidth : newHeight = originWidth : originHeight
             int originWidth = image.getWidth();
@@ -123,19 +128,25 @@ public class AmazonS3Service {
                 return originalImage;
 
             MarvinImage imageMarvin = new MarvinImage(image);
-
+            // 기존 이미지 파일(imageMarvin)을 리사이징
             Scale scale = new Scale();
             scale.load();
             scale.setAttribute("newWidth", targetWidth);
             scale.setAttribute("newHeight", targetWidth * originHeight / originWidth);
             scale.process(imageMarvin.clone(), imageMarvin, null, null, false);
 
+
+            // BufferedImage를 MultipartFile로 변환
             BufferedImage imageNoAlpha = imageMarvin.getBufferedImageNoAlpha();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(imageNoAlpha, fileFormatName, baos);
+            MockMultipartFile mockMultipartFile = new MockMultipartFile(filename, baos.toByteArray());
             baos.flush();
 
-            return new MockMultipartFile(filename, baos.toByteArray());
+
+            return mockMultipartFile;
+//            byte[] bytes = baos.toByteArray();
+//            return new CustomMultipartFile(bytes, filename, fileFormatName, bytes.length);
 
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 리사이즈에 실패했습니다.");
@@ -143,3 +154,4 @@ public class AmazonS3Service {
     }
 
 }
+

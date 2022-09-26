@@ -58,6 +58,6 @@ public class Place {
   private List<Comment> commentList;
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  private List<Image> imageList;
+  private List<PlaceImage> imageList;
 
 }

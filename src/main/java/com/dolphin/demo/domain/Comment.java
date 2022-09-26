@@ -32,7 +32,7 @@ public class Comment extends Timestamped {
 
 
     @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Image> imageList;
+    private List<CommentImage> imageList;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -48,7 +48,7 @@ public class Comment extends Timestamped {
 //    private Member member;
 
 
-    public Comment(CommentRequestDto commentRequestDto, List<Image> imageList) {
+    public Comment(CommentRequestDto commentRequestDto, List<CommentImage> imageList) {
         this.title = commentRequestDto.getTitle();
         this.content = commentRequestDto.getContent();
         this.star = commentRequestDto.getStar();
@@ -68,5 +68,6 @@ public class Comment extends Timestamped {
         this.content = commentRequestDto.getContent();
         this.star = commentRequestDto.getStar();
     }
+
 
 }

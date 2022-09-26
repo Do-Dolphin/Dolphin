@@ -1,16 +1,13 @@
 package com.dolphin.demo.repository;
 
-import com.dolphin.demo.domain.Image;
+import com.dolphin.demo.domain.CommentImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
-import java.util.Optional;
 
 
-public interface ImageRepository extends JpaRepository<Image, Long> {
+public interface CommentImageRepository extends JpaRepository<CommentImage, Long> {
 
-    List<Image> findAllByCommentId(Long comment_id);
+    List<CommentImage> findAllByCommentId(Long comment_id);
 
-    List<Image> findAllByPlaceId(Long place_id);
-    Image findByPlaceId(Long place_id);
 
 }
