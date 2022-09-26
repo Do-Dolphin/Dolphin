@@ -1,8 +1,8 @@
 package com.dolphin.demo.controller;
 
 import com.dolphin.demo.domain.Member;
-import com.dolphin.demo.dto.requestDto.LoginRequestDto;
-import com.dolphin.demo.dto.requestDto.SignupRequestDto;
+import com.dolphin.demo.dto.request.LoginRequestDto;
+import com.dolphin.demo.dto.request.SignupRequestDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.MemberService;
 import lombok.RequiredArgsConstructor;
