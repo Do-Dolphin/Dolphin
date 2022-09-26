@@ -1,11 +1,11 @@
 package com.dolphin.demo.service;
 
-import com.dolphin.demo.domain.Image;
+import com.dolphin.demo.domain.PlaceImage;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.response.PlaceListResponseDto;
 import com.dolphin.demo.dto.response.PlaceResponseDto;
 import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
-import com.dolphin.demo.repository.ImageRepository;
+import com.dolphin.demo.repository.PlaceImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +27,7 @@ import java.util.List;
 public class PlaceService {
 
     private final PlaceRepository placeRepository;
-    private final ImageRepository imageRepository;
+    private final PlaceImageRepository imageRepository;
     @Value("${restAPI.key}")
     String apiKey;
 
@@ -38,7 +38,7 @@ public class PlaceService {
         List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode,sigunguCode,theme,pageRequest);
         for (Place place : placeList) {
             System.out.println(place.getId());
-            Image img = imageRepository.findByPlaceId(place.getId());
+            PlaceImage img = imageRepository.findByPlaceId(place.getId());
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
@@ -109,7 +109,7 @@ public class PlaceService {
 
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
-        Image img = imageRepository.findByPlaceId(place.getId());
+        PlaceImage img = imageRepository.findByPlaceId(place.getId());
         if (img != null)
             return PlaceListResponseDto.builder()
                     .id(place.getId())
@@ -146,7 +146,7 @@ public class PlaceService {
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
 
-        Image img = imageRepository.findByPlaceId(place.getId());
+        PlaceImage img = imageRepository.findByPlaceId(place.getId());
         if (img != null)
             return PlaceListResponseDto.builder()
                     .id(place.getId())
@@ -172,7 +172,7 @@ public class PlaceService {
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
         List<Place> placeList = placeRepository.findAllByThemeOrderByReadCountDesc(String.valueOf(theme),pageRequest);
         for (Place place : placeList) {
-            Image img = imageRepository.findByPlaceId(place.getId());
+            PlaceImage img = imageRepository.findByPlaceId(place.getId());
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
@@ -194,10 +194,10 @@ public class PlaceService {
     public ResponseEntity<PlaceResponseDto> getPlaceDetail(Long id) {
 
         Place place = placeRepository.findById(id).orElse(null);
-        List<Image> img = imageRepository.findAllByPlaceId(place.getId());
+        List<PlaceImage> img = imageRepository.findAllByPlaceId(place.getId());
         List<String> images = new ArrayList<>();
         if(!img.isEmpty())
-            for (Image image : img) {
+            for (PlaceImage image : img) {
                 images.add(image.getImageUrl());
             }
 
@@ -237,7 +237,7 @@ public class PlaceService {
     @PostConstruct
     public void savePlace(){
         List<Place> places = new ArrayList<>();
-        List<Image> imageList = new ArrayList<>();
+        List<PlaceImage> imageList = new ArrayList<>();
         // 본인이 받은 api키를 추가
         String key = "";
         int totalCount = 0;
@@ -295,10 +295,9 @@ public class PlaceService {
                     places.add(place);
                     String img = getTagValue("firstimage",eElement);
                     if(!img.equals(""))
-                        imageList.add(Image.builder()
+                        imageList.add(PlaceImage.builder()
                                 .place(place)
                                 .imageUrl(img)
-                                .filename(place.getTitle())
                                 .build());
 //                    } catch (Exception e) {
 //                        e.printStackTrace();
@@ -331,7 +330,7 @@ public class PlaceService {
 //
 //    public boolean savePlace(String theme, int pageNum){
 //        List<Place> places = new ArrayList<>();
-//        List<Image> imageList = new ArrayList<>();
+//        List<PlaceImage> imageList = new ArrayList<>();
 //        // 본인이 받은 api키를 추가
 //        String key = "";
 //        int totalCount = 0;
@@ -409,7 +408,7 @@ public class PlaceService {
 //                        places.add(place);
 //                    String img = getTagValue("firstimage",eElement);
 //                    if(!img.equals(""))
-//                        imageList.add(Image.builder()
+//                        imageList.add(PlaceImage.builder()
 //                                .place(place)
 //                                .imageUrl(img)
 //                                .filename(place.getTitle())
