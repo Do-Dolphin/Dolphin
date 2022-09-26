@@ -30,13 +30,13 @@ public class MemberController {
 
     //회원가입
     @PostMapping("/api/member/signup")
-    public ResponseEntity<Member> signup(@Valid @RequestBody SignupRequestDto requestDto) {
+    public ResponseEntity<String> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         return memberService.signup(requestDto);
     }
 
     //로그인
     @PostMapping("/api/member/login")
-    public ResponseEntity<Member> login(@RequestBody LoginRequestDto requestDto) {
+    public ResponseEntity<String> login(@RequestBody LoginRequestDto requestDto) {
         return memberService.login(requestDto);
     }
 
