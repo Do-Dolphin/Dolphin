@@ -1,14 +1,10 @@
 package com.dolphin.demo.dto.response;
 
-import com.dolphin.demo.domain.Comment;
-import com.dolphin.demo.domain.Image;
-import com.dolphin.demo.dto.request.ImageRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 
