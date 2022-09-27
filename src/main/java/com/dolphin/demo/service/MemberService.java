@@ -2,6 +2,7 @@ package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.request.LoginRequestDto;
+import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
 import com.dolphin.demo.jwt.JwtTokenProvider;
 import com.dolphin.demo.repository.MemberRepository;
