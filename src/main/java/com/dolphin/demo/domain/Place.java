@@ -23,6 +23,7 @@ public class Place {
   @Column(name = "place_id")
   private Long id;
 
+
   @Column(nullable = false)
   private String title;
 
@@ -61,8 +62,6 @@ public class Place {
 
 
   private Long readCount;
-
-
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private List<Comment> commentList;

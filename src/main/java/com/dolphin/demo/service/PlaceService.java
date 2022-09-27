@@ -78,13 +78,15 @@ public class PlaceService {
                 if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaCode), String.valueOf(sigunguCode)))
                     break;
             }
-            for (String theme : themes) {
+
+            for (String theme: themes) {
                 randomList.add(randomSigungu(String.valueOf(areaCode), String.valueOf(sigunguCode), theme));
             }
-            area = getArea(randomList.get(0), 1);
+            area =getArea(randomList.get(0),1);
 
-        } else {
-            for (String theme : themes) {
+        } else{
+            for (String theme: themes) {
+
                 randomList.add(randomArea(String.valueOf(areaCode), theme));
             }
             area = getArea(randomList.get(0), 0);
@@ -223,6 +225,7 @@ public class PlaceService {
                 .mapX(place.getMapX())
                 .mapY(place.getMapY())
                 .build());
+
     }
 
     @Transactional
@@ -276,6 +279,7 @@ public class PlaceService {
                 .mapY(place.getMapY())
                 .imageUrl(imageList)
                 .build());
+
     }
 
 
@@ -391,7 +395,7 @@ public class PlaceService {
         placeRepository.saveAll(places);
         imageRepository.saveAll(imageList);
         System.out.println("save end");
-    }
+    }}
 
 
 //    @PostConstruct
@@ -502,5 +506,4 @@ public class PlaceService {
 //        imageRepository.saveAll(imageList);
 //        System.out.println("save method end");
 //            return totalCount > pageNum * 7000;
-//        }
-}
+//

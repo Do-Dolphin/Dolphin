@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -64,7 +63,7 @@ public class MemberService {
                 .build();
         memberRepository.save(member);
 
-        String message = member.getNickname()+" 회원가입 환영합니다" ;
+        String message = member.getNickname()+"님 회원가입을 환영합니다" ;
 
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
@@ -92,7 +91,7 @@ public class MemberService {
         //토큰 만들기
         tokensProcess(member.getUsername());
 
-        String message = member.getNickname()+" 방문을 환영합니다" ;
+        String message = member.getNickname()+"님 방문을 환영합니다" ;
 
         return new ResponseEntity<>(message,HttpStatus.OK);
     }
@@ -162,8 +161,8 @@ public class MemberService {
                 "숨어있는 ", "열쇠찾는 ", "낙서하는 ", "날개짓하는 ", "이슬을피하는 ", "끝없이코딩하는", "전이먹고싶은", "회가먹고싶은", "파파야가먹고싶은", "두리안이먹고싶은 ","거절하는",
                 "숙제하는 ", "보물찾는 ", "이모를찾는 ", "과자먹는 ", "몰래자러가는 ", "온도재는 ", "방송하는 ", "헤엄치는 ", "자랑하는 ", "네모네모한", "귀여움을뽑내는 ");
 
-        List<String> anyone = Arrays.asList("곰돌이", "냥이", "고양이", "고양희씨", "토끼", "레드토끼", "미역", "전복", "사자", "자라", "민들레", "군돌이", "해바라기 ", "치타",
-                "표범", "사슴", "숫사슴", "강아지", "고래씨", "돌고래", "고뤠씨", "오리", "거위", "닭", "병아리", "짹짹이", "하마", "기린", "용씨", "냥아치", "늑대", "여우", "황소",
+        List<String> anyone = Arrays.asList("곰돌이", "냥이", "고양이", "고양희", "토끼", "레드토끼", "미역", "전복", "사자", "자라", "민들레", "군돌이", "해바라기 ", "치타",
+                "표범", "사슴", "숫사슴", "강아지", "고래", "돌고래", "고뤠", "오리", "거위", "닭", "병아리", "짹짹이", "하마", "기린", "용씨", "냥아치", "늑대", "여우", "황소",
                 "매", "양", "염소", "나무", "바람", "말", "태양", "씨앗", "풀잎", "개발자", "고먐미", "클로버");
 
 
@@ -173,6 +172,17 @@ public class MemberService {
         Collections.shuffle(anyone);
         return at.get(0)+location.get(0)+action.get(0)+anyone.get(0);
         }
+
+    //닉네임 변경
+//    @Transactional
+//    public ResponseEntity<String> updateNickname(Member memberinfo, NicknameDto nicknameDto) {
+//        Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
+//                () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
+//        );
+//        member.updateNickname(nicknameDto);
+//        String message = "닉네임이 "+member.getNickname()+"로 변경되었습니다.";
+//        return new ResponseEntity<>(message,HttpStatus.OK);
+//    }
 
 }
 
