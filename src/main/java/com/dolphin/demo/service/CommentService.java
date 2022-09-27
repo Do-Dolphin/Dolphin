@@ -148,7 +148,7 @@ public class CommentService {
                 .star(commentRequestDto.getStar())
                 .build();
         comment.update(updateComment);
-        commentRepository.save(comment);
+//        commentRepository.save(comment);
 
         // 이미지 수정 및 재등록 기능
         List<String> imageList = new ArrayList<>();
