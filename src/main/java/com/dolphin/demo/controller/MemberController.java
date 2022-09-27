@@ -43,11 +43,11 @@ public class MemberController {
         return memberService.logout(userDetails.getMember().getId(),refreshToken);
     }
 
-//    @PutMapping("/api/member/edit")
-//    public ResponseEntity<String> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
-//                                                 @RequestBody NicknameDto nicknameDto) {
-//        return memberService.updateNickname(userDetails.getMember(), nicknameDto);
-//    }
+    @PutMapping("/api/member/edit")
+    public ResponseEntity<String> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                 @RequestBody NicknameDto nicknameDto) {
+        return memberService.updateNickname(userDetails.getMember(), nicknameDto);
+    }
 
     // 만료된 access token 재 발급
     @PostMapping(value = "/api/auth/member/retoken")
