@@ -1,16 +1,18 @@
 package com.dolphin.demo.service;
 
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.dolphin.demo.domain.Comment;
 import com.dolphin.demo.domain.CommentImage;
+import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
-import com.dolphin.demo.repository.CommentImageRepository;
+import com.dolphin.demo.exception.CustomException;
+import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.CommentRepository;
+import com.dolphin.demo.repository.CommentImageRepository;
+import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,18 +20,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.dolphin.demo.exception.ErrorCode.DO_NOT_MATCH_USER;
+
 
 @RequiredArgsConstructor
 @Service
 public class CommentService {
 
-    private final AmazonS3Client amazonS3Client;
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
     private final CommentRepository commentRepository;
     private final AmazonS3Service amazonS3Service;
     private final CommentImageRepository commentImageRepository;
     private final PlaceRepository placeRepository;
+    private final MemberRepository memberRepository;
 
 
     // 여행지 상세페이지 후기 조회
@@ -57,6 +59,7 @@ public class CommentService {
             CommentResponseDto commentResponseDto = CommentResponseDto.builder()
                     .comment_id(comments.getId())
                     .place_id(comments.getPlace().getId())
+                    .nickname(comments.getMember().getNickname())
                     .title(comments.getTitle())
                     .content(comments.getContent())
                     .imageList(imageList)
@@ -72,15 +75,18 @@ public class CommentService {
 
 
     // 후기 등록
-    public ResponseEntity<CommentResponseDto> createComment(Long place_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile) throws IOException {
+    public ResponseEntity<CommentResponseDto> createComment(Long place_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile, UserDetailsImpl userDetails) throws IOException {
 
-        // 예외처리 추가 예정
+        // 로그인한 회원인지 여부 검증
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+
         // 여행지 존재 여부 검증
         Place place = placeRepository.findById(place_id)
                 .orElseThrow(() -> new IllegalArgumentException("여행지가 존재하지 않습니다."));
 
         // 제목, 내용, 별점을 저장
-        Comment comment = new Comment(commentRequestDto, place);
+        Comment comment = new Comment(commentRequestDto, place, member);
+        place.updateStar(comment.getStar(),1);
         commentRepository.save(comment);
 
 
@@ -103,6 +109,7 @@ public class CommentService {
         return ResponseEntity.ok().body(CommentResponseDto.builder()
                 .comment_id(comment.getId())
                 .place_id(comment.getPlace().getId())
+                .nickname(comment.getMember().getNickname())
                 .title(comment.getTitle())
                 .content(comment.getContent())
                 .imageList(imageList)
@@ -114,18 +121,24 @@ public class CommentService {
 
 
     // 후기 수정하기
-    public ResponseEntity<CommentResponseDto> updateComment(Long comment_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile) throws IOException {
+    public ResponseEntity<CommentResponseDto> updateComment(Long comment_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile, UserDetailsImpl userDetails) throws IOException {
 
-        // 예외처리 추가 예정 ,, 작성자가 맞는지
-
+        // 로그인한 회원인지 여부 검증
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
 
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(comment_id)
                 .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
 
+        // 작성자가 맞는지 여부 검증
+        if(!(comment.getMember().getId().equals(member.getId()))) {
+            throw new CustomException(DO_NOT_MATCH_USER);
+        }
+
 
         // 해당 후기의 모든 이미지 불러오기
         List<CommentImage> image = commentImageRepository.findAllByCommentId(comment_id);
+        comment.getPlace().updateStar(commentRequestDto.getStar()-comment.getStar(),0);
 
 
         // 수정된 내용 저장
@@ -140,7 +153,7 @@ public class CommentService {
         // 이미지 수정 및 재등록 기능
         List<String> imageList = new ArrayList<>();
         // 새로 등록하는 이미지가 없는 경우
-        if(multipartFile.get(0).isEmpty()) {
+        if(multipartFile == null) {
             // 기존 이미지가 있다면 기존 Url 불러오기
             List<CommentImage> saveImage = new ArrayList<>();
             for (CommentImage existImage : image) {
@@ -156,6 +169,7 @@ public class CommentService {
             return ResponseEntity.ok().body(CommentResponseDto.builder()
                     .comment_id(comment.getId())
                     .place_id(comment.getPlace().getId())
+                    .nickname(comment.getMember().getNickname())
                     .title(comment.getTitle())
                     .content(comment.getContent())
                     .imageList(imageList)
@@ -191,6 +205,7 @@ public class CommentService {
             return ResponseEntity.ok().body(CommentResponseDto.builder()
                     .comment_id(comment.getId())
                     .place_id(comment.getPlace().getId())
+                    .nickname(comment.getMember().getNickname())
                     .title(comment.getTitle())
                     .content(comment.getContent())
                     .imageList(imageList)
@@ -204,14 +219,20 @@ public class CommentService {
     }
 
     // 후기 삭제하기
-    public ResponseEntity<Long> deleteComment(Long id) throws IOException {
+    public ResponseEntity<Long> deleteComment(Long id, UserDetailsImpl userDetails) throws IOException {
 
-        /* 예외처리 추가 예정
-          작성자가 맞는지 */
+        // 로그인한 회원인지 여부 검증
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
 
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
+
+        // 작성자가 맞는지 여부 검증
+        if(!(comment.getMember().getId().equals(member.getId()))) {
+            throw new CustomException(DO_NOT_MATCH_USER);
+        }
+
 
         List<CommentImage> image = commentImageRepository.findAllByCommentId(id);
 
@@ -219,6 +240,7 @@ public class CommentService {
         for(int i=0; i<image.size(); i++) {
             amazonS3Service.deleteFile(image.get(i).getImageUrl().substring(image.get(i).getImageUrl().lastIndexOf("/") + 1));
         }
+        comment.getPlace().updateStar(comment.getStar()*-1,-1);
 
         // 후기 삭제
         commentRepository.delete(comment);

@@ -1,8 +1,6 @@
 package com.dolphin.demo.controller;
 
-import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.request.LoginRequestDto;
-import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.MemberService;
@@ -45,11 +43,11 @@ public class MemberController {
         return memberService.logout(userDetails.getMember().getId(),refreshToken);
     }
 
-    @PutMapping("/api/member/edit")
-    public ResponseEntity<String> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                 @RequestBody NicknameDto nicknameDto) {
-        return memberService.updateNickname(userDetails.getMember(), nicknameDto);
-    }
+//    @PutMapping("/api/member/edit")
+//    public ResponseEntity<String> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
+//                                                 @RequestBody NicknameDto nicknameDto) {
+//        return memberService.updateNickname(userDetails.getMember(), nicknameDto);
+//    }
 
     // 만료된 access token 재 발급
     @PostMapping(value = "/api/auth/member/retoken")

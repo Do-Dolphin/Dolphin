@@ -3,7 +3,6 @@ package com.dolphin.demo.dto.request;
 import com.dolphin.demo.domain.Comment;
 import com.dolphin.demo.domain.Place;
 import lombok.*;
-
 import java.util.List;
 
 

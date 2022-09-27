@@ -2,7 +2,6 @@ package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.request.LoginRequestDto;
-import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
 import com.dolphin.demo.jwt.JwtTokenProvider;
 import com.dolphin.demo.repository.MemberRepository;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.mail.internet.MimeMessage;
 import javax.validation.Valid;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -183,15 +183,15 @@ public class MemberService {
         }
 
     //닉네임 변경
-    @Transactional
-    public ResponseEntity<String> updateNickname(Member memberinfo, NicknameDto nicknameDto) {
-        Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
-                () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
-        );
-        member.updateNickname(nicknameDto);
-        String message = "닉네임이 "+member.getNickname()+"로 변경되었습니다.";
-        return new ResponseEntity<>(message,HttpStatus.OK);
-    }
+//    @Transactional
+//    public ResponseEntity<String> updateNickname(Member memberinfo, NicknameDto nicknameDto) {
+//        Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
+//                () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
+//        );
+//        member.updateNickname(nicknameDto);
+//        String message = "닉네임이 "+member.getNickname()+"로 변경되었습니다.";
+//        return new ResponseEntity<>(message,HttpStatus.OK);
+//    }
 
 }
 
