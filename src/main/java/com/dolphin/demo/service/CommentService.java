@@ -138,7 +138,7 @@ public class CommentService {
 
         // 해당 후기의 모든 이미지 불러오기
         List<CommentImage> image = commentImageRepository.findAllByCommentId(comment_id);
-        comment.getPlace().updateStar(comment.getStar()-commentRequestDto.getStar(),0);
+        comment.getPlace().updateStar(commentRequestDto.getStar()-comment.getStar(),0);
 
 
         // 수정된 내용 저장
