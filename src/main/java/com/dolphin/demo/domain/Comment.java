@@ -21,12 +21,10 @@ public class Comment extends Timestamped {
     private Long id;
 
 
-    @NotBlank
     @Column(nullable = false)
     private String title;
 
 
-    @NotBlank
     @Column(nullable = false)
     private String content;
 

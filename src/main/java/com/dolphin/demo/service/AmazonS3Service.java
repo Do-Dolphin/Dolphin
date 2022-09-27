@@ -49,7 +49,7 @@ public class AmazonS3Service {
     @Transactional
     public List<String> upload(List<MultipartFile> multipartFiles) throws IOException {
 
-        if (multipartFiles.get(0).isEmpty()) {
+        if (multipartFiles == null) {
             return Collections.emptyList();
         }
 
@@ -142,10 +142,7 @@ public class AmazonS3Service {
             MockMultipartFile mockMultipartFile = new MockMultipartFile(filename, baos.toByteArray());
             baos.flush();
 
-
             return mockMultipartFile;
-//            byte[] bytes = baos.toByteArray();
-//            return new CustomMultipartFile(bytes, filename, fileFormatName, bytes.length);
 
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 리사이즈에 실패했습니다.");

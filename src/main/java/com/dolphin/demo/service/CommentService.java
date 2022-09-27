@@ -86,6 +86,7 @@ public class CommentService {
 
         // 제목, 내용, 별점을 저장
         Comment comment = new Comment(commentRequestDto, place, member);
+        place.updateStar(comment.getStar(),1);
         commentRepository.save(comment);
 
 
@@ -137,6 +138,7 @@ public class CommentService {
 
         // 해당 후기의 모든 이미지 불러오기
         List<CommentImage> image = commentImageRepository.findAllByCommentId(comment_id);
+        comment.getPlace().updateStar(comment.getStar()-commentRequestDto.getStar(),0);
 
 
         // 수정된 내용 저장
@@ -151,7 +153,7 @@ public class CommentService {
         // 이미지 수정 및 재등록 기능
         List<String> imageList = new ArrayList<>();
         // 새로 등록하는 이미지가 없는 경우
-        if(multipartFile.get(0).isEmpty()) {
+        if(multipartFile == null) {
             // 기존 이미지가 있다면 기존 Url 불러오기
             List<CommentImage> saveImage = new ArrayList<>();
             for (CommentImage existImage : image) {
@@ -238,6 +240,7 @@ public class CommentService {
         for(int i=0; i<image.size(); i++) {
             amazonS3Service.deleteFile(image.get(i).getImageUrl().substring(image.get(i).getImageUrl().lastIndexOf("/") + 1));
         }
+        comment.getPlace().updateStar(comment.getStar()*-1,-1);
 
         // 후기 삭제
         commentRepository.delete(comment);
