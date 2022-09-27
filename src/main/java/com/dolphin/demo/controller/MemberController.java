@@ -2,16 +2,14 @@ package com.dolphin.demo.controller;
 
 import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.request.LoginRequestDto;
+import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -45,6 +43,12 @@ public class MemberController {
     public ResponseEntity<String> logout(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                          @RequestHeader(value = "RefreshToken") String refreshToken){
         return memberService.logout(userDetails.getMember().getId(),refreshToken);
+    }
+
+    @PutMapping("/api/member/edit")
+    public ResponseEntity<String> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                 @RequestBody NicknameDto nicknameDto) {
+        return memberService.updateNickname(userDetails.getMember(), nicknameDto);
     }
 
     // 만료된 access token 재 발급
