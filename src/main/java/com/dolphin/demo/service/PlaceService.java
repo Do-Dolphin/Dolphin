@@ -63,26 +63,26 @@ public class PlaceService {
         int sigunguCode;
         String[] themes = {"12", "14", "28", "39"};
         String area;
-            if (areaCode > 8) {
-                areaCode += 22;
+        if (areaCode > 8) {
+            areaCode += 22;
 
-                while (true) {
-                    sigunguCode = (int) (Math.random() * 31 + 1);
+            while (true) {
+                sigunguCode = (int) (Math.random() * 31 + 1);
 
-                    if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaCode), String.valueOf(sigunguCode)))
-                        break;
-                }
-                for (String theme: themes) {
-                    randomList.add(randomSigungu(String.valueOf(areaCode), String.valueOf(sigunguCode), theme));
-                }
-                area =getArea(randomList.get(0),1);
-
-            } else{
-                for (String theme: themes) {
-                    randomList.add(randomArea(String.valueOf(areaCode), theme));
-                }
-                area = getArea(randomList.get(0), 0);
+                if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaCode), String.valueOf(sigunguCode)))
+                    break;
             }
+            for (String theme: themes) {
+                randomList.add(randomSigungu(String.valueOf(areaCode), String.valueOf(sigunguCode), theme));
+            }
+            area =getArea(randomList.get(0),1);
+
+        } else{
+            for (String theme: themes) {
+                randomList.add(randomArea(String.valueOf(areaCode), theme));
+            }
+            area = getArea(randomList.get(0), 0);
+        }
 
 
         return ResponseEntity.ok(RandomPlaceResponseDto.builder()
@@ -202,17 +202,17 @@ public class PlaceService {
             }
 
         return ResponseEntity.ok(PlaceResponseDto.builder()
-                        .id(place.getId())
-                        .title(place.getTitle())
-                        .content(place.getContent())
-                        .address(place.getAddress())
-                        .theme(place.getTheme())
-                        .likes(place.getLikes())
-                        .star(place.getStar())
-                        .imageUrl(images)
-                        .mapX(place.getMapX())
-                        .mapY(place.getMapY())
-                        .build());
+                .id(place.getId())
+                .title(place.getTitle())
+                .content(place.getContent())
+                .address(place.getAddress())
+                .theme(place.getTheme())
+                .likes(place.getLikes())
+                .star(place.getStar())
+                .imageUrl(images)
+                .mapX(place.getMapX())
+                .mapY(place.getMapY())
+                .build());
     }
 
 
@@ -310,7 +310,7 @@ public class PlaceService {
         placeRepository.saveAll(places);
         imageRepository.saveAll(imageList);
         System.out.println("save end");
-    }
+    }}
 
 
 
@@ -425,5 +425,4 @@ public class PlaceService {
 //        imageRepository.saveAll(imageList);
 //        System.out.println("save method end");
 //            return totalCount > pageNum * 7000;
-//        }
-}
+//

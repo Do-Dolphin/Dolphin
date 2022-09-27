@@ -21,12 +21,10 @@ public class Comment extends Timestamped {
     private Long id;
 
 
-    @NotBlank
     @Column(nullable = false)
     private String title;
 
 
-    @NotBlank
     @Column(nullable = false)
     private String content;
 
@@ -42,10 +40,10 @@ public class Comment extends Timestamped {
     @Column(nullable = false)
     private int star;
 
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "member_id")
-//    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
 
     public Comment(CommentRequestDto commentRequestDto, List<CommentImage> imageList) {
@@ -55,8 +53,9 @@ public class Comment extends Timestamped {
         this.imageList = imageList;
     }
 
-    public Comment(CommentRequestDto commentRequestDto, Place place) {
+    public Comment(CommentRequestDto commentRequestDto, Place place, Member member) {
         this.place = place;
+        this.member = member;
         this.title = commentRequestDto.getTitle();
         this.content = commentRequestDto.getContent();
         this.star = commentRequestDto.getStar();
@@ -69,7 +68,5 @@ public class Comment extends Timestamped {
         this.star = commentRequestDto.getStar();
     }
 
-    public void updateImage(List<CommentImage> imageList) {
-        this.imageList = imageList;
-    }
+
 }

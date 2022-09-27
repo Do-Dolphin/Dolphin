@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     // 401 Unauthorized.
-    UNAUTHORIZED_LOGIN(HttpStatus.UNAUTHORIZED, "401_2", "로그인이 필요합니다.");
+    UNAUTHORIZED_LOGIN(HttpStatus.UNAUTHORIZED, "401_2", "로그인이 필요합니다."),
+    DO_NOT_MATCH_USER(HttpStatus.UNAUTHORIZED, "401_3", "작성자만 수정, 삭제를 할 수 있습니다.");
 
 
     private final HttpStatus httpStatus;
