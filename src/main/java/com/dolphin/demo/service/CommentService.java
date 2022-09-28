@@ -148,31 +148,18 @@ public class CommentService {
                 .star(commentRequestDto.getStar())
                 .build();
         comment.update(updateComment);
-//        commentRepository.save(comment);
+        commentRepository.save(comment);
 
         // 이미지 수정 및 재등록 기능
         List<String> imageList = new ArrayList<>();
         // 새로 등록하는 이미지가 없는 경우
         if(multipartFile == null) {
-            // 기존 이미지가 있다면 기존 Url 불러오기
-            List<CommentImage> saveImage = new ArrayList<>();
-            for (CommentImage existImage : image) {
-                String imageUrl = existImage.getImageUrl();
-                CommentImage existImages = CommentImage.builder()
-                        .comment(comment)
-                        .imageUrl(imageUrl)
-                        .build();
-                saveImage.add(existImages);
-                imageList.add(existImages.getImageUrl());
-            }
-            commentImageRepository.saveAll(saveImage);
             return ResponseEntity.ok().body(CommentResponseDto.builder()
                     .comment_id(comment.getId())
                     .place_id(comment.getPlace().getId())
                     .nickname(comment.getMember().getNickname())
                     .title(comment.getTitle())
                     .content(comment.getContent())
-                    .imageList(imageList)
                     .star(comment.getStar())
                     .createdAt(comment.getCreatedAt())
                     .modifiedAt(comment.getModifiedAt())

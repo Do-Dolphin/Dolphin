@@ -23,7 +23,6 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
-    private final MemberRepository memberRepository;
 
     // 여행지 상세페이지의 후기 전체 조회
     @GetMapping("/comment/{place_id}")
