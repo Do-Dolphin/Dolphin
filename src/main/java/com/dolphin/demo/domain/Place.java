@@ -90,4 +90,7 @@ public class Place {
     this.sigunguCode = requestDto.getSigunguCode();
   }
 
+  public void udateLikes(int likes){
+    this.likes = likes;
+  }
 }
