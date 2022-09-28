@@ -2,6 +2,7 @@ package com.dolphin.demo.controller;
 
 import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.request.CommentRequestDto;
+import com.dolphin.demo.dto.request.ImageRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.MemberRepository;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -46,11 +48,11 @@ public class CommentController {
     // 후기 수정
     @PutMapping("/auth/comment/{id}")
     public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id,
-                                                            @Valid @RequestPart(value = "data") CommentRequestDto commentRequestDto,
+                                                            @Valid @RequestPart(value = "data") ImageRequestDto imageRequestDto,
                                                             @RequestPart(value = "image", required = false) List<MultipartFile> multipartFile,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
 
-        return commentService.updateComment(id, commentRequestDto, multipartFile, userDetails);
+        return commentService.updateComment(id, imageRequestDto, multipartFile, userDetails);
     }
 
 
