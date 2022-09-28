@@ -5,12 +5,14 @@ import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.Place;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 
 public interface HeartRepository extends JpaRepository<Heart, Long> {
 
     int countByPlace(Place place);
-    Optional<Heart> findByMember(Member member);
+    Optional<Heart> findByMemberAndPlace(Member member, Place place);
     void deleteAllByPlace(Place place);
+    List<Heart> findAllByMember(Member member);
 }

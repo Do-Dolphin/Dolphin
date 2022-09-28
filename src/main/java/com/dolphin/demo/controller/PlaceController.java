@@ -49,22 +49,25 @@ public class PlaceController {
     }
 
     @PostMapping("api/auth/place")
-    public ResponseEntity<PlaceResponseDto> createPlace(@RequestPart("data")PlaceRequestDto placeRequestDto,
+    public ResponseEntity<PlaceResponseDto> createPlace(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                        @RequestPart("data")PlaceRequestDto placeRequestDto,
                                                         @RequestPart(value = "image", required = false)List<MultipartFile> multipartFile) throws IOException {
-        return placeService.createPlace(placeRequestDto, multipartFile);
+        return placeService.createPlace(userDetails, placeRequestDto, multipartFile);
     }
 
 
     @PutMapping("api/auth/place/{id}")
-    public ResponseEntity<PlaceResponseDto> updatePlace(@PathVariable Long id,
+    public ResponseEntity<PlaceResponseDto> updatePlace(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                        @PathVariable Long id,
                                                         @RequestPart("data")PlaceRequestDto placeRequestDto,
                                                         @RequestPart(value = "image", required = false)List<MultipartFile> multipartFile) throws IOException {
-        return placeService.updatePlace(id, placeRequestDto, multipartFile);
+        return placeService.updatePlace(userDetails, id, placeRequestDto, multipartFile);
     }
 
     @DeleteMapping("api/auth/place/{id}")
-    public ResponseEntity<String> deletePlace(@PathVariable Long id) {
-        return placeService.deletePlace(id);
+    public ResponseEntity<String> deletePlace(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                              @PathVariable Long id) {
+        return placeService.deletePlace(id, userDetails);
     }
 
     @PostMapping("api/auth/place/like/{id}")
@@ -77,6 +80,11 @@ public class PlaceController {
     public ResponseEntity<Boolean> getPlaceLikeState(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                      @PathVariable Long id){
         return placeService.getPlaceLikeState(id, userDetails);
+    }
+
+    @GetMapping("api/auth/place/like")
+    public ResponseEntity<List<PlaceListResponseDto>> getLikePlaceList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return placeService.getLikePlaceList(userDetails);
     }
 
 }
