@@ -9,6 +9,8 @@ import com.dolphin.demo.dto.response.HeartResponseDto;
 import com.dolphin.demo.dto.response.PlaceListResponseDto;
 import com.dolphin.demo.dto.response.PlaceResponseDto;
 import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
+import com.dolphin.demo.exception.CustomException;
+import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.HeartRepository;
 import com.dolphin.demo.repository.MemberRepository;
@@ -210,7 +212,7 @@ public class PlaceService {
         Place place = placeRepository.findById(id).orElse(null);
 
         if (place == null)
-            throw new IllegalArgumentException("일치하는 장소가 없습니다.");
+            throw new CustomException(ErrorCode.Not_Found_Place);
 
         List<PlaceImage> img = imageRepository.findAllByPlace(place);
         List<String> images = new ArrayList<>();
@@ -235,7 +237,13 @@ public class PlaceService {
     }
 
     @Transactional
-    public ResponseEntity<PlaceResponseDto> createPlace(PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
+    public ResponseEntity<PlaceResponseDto> createPlace(UserDetailsImpl userDetails, PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
         Long id = placeRepository.getTopByOrderByIdDesc().getId();
         if (id < 5000000)
             id = 4999999L;
@@ -289,10 +297,15 @@ public class PlaceService {
     }
 
 
-    public ResponseEntity<PlaceResponseDto> updatePlace(Long id, PlaceRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
+    public ResponseEntity<PlaceResponseDto> updatePlace(UserDetailsImpl userDetails, Long id, PlaceRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            return ResponseEntity.notFound().build();
+            throw new CustomException(ErrorCode.Not_Found_Place);
 
         place.update(placeRequestDto);
 
@@ -335,11 +348,11 @@ public class PlaceService {
     }
 
     @Transactional
-    public ResponseEntity<String> deletePlace(Long id) {
+    public ResponseEntity<String> deletePlace(Long id, UserDetailsImpl userDetails) {
 
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            return ResponseEntity.notFound().build();
+            throw new CustomException(ErrorCode.Not_Found_Place);
         List<PlaceImage> images = imageRepository.findAllByPlace(place);
         // 버킷에서 이미지 삭제
         for (int i = 0; i < images.size(); i++) {
@@ -354,17 +367,19 @@ public class PlaceService {
 
     @Transactional
     public ResponseEntity<HeartResponseDto> likePlace(Long id, UserDetailsImpl userDetails) {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
         if (member == null)
-            ResponseEntity.notFound().build();
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            return ResponseEntity.notFound().build();
+            throw new CustomException(ErrorCode.Not_Found_Place);
 
         boolean state;
 
-        Heart heart = heartRepository.findByMember(member).orElse(null);
+        Heart heart = heartRepository.findByMemberAndPlace(member, place).orElse(null);
         if (heart == null) {
             heartRepository.save(Heart.builder()
                     .place(place)
@@ -387,13 +402,13 @@ public class PlaceService {
     public ResponseEntity<Boolean> getPlaceLikeState(Long id, UserDetailsImpl userDetails) {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            return ResponseEntity.notFound().build();
+            throw new CustomException(ErrorCode.Not_Found_Place);
 
         boolean state = false;
         if(userDetails != null) {
             Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
             if (member != null) {
-                Heart heart = heartRepository.findByMember(member).orElse(null);
+                Heart heart = heartRepository.findByMemberAndPlace(member, place).orElse(null);
                 if (heart != null) {
                     state = true;
                 }
@@ -401,6 +416,44 @@ public class PlaceService {
         }
         return ResponseEntity.ok(state);
     }
+
+    public ResponseEntity<List<PlaceListResponseDto>> getLikePlaceList(UserDetailsImpl userDetails) {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
+        List<Heart> hearts = heartRepository.findAllByMember(member);
+
+        List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
+
+        for (Heart heart : hearts) {
+            Place place = heart.getPlace();
+            PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+            if (img != null)
+                responseDtoList.add(PlaceListResponseDto.builder()
+                        .id(place.getId())
+                        .title(place.getTitle())
+                        .star(place.getStar())
+                        .image(img.getImageUrl())
+                        .build());
+            else
+                responseDtoList.add(PlaceListResponseDto.builder()
+                        .id(place.getId())
+                        .title(place.getTitle())
+                        .star(place.getStar())
+                        .build());
+        }
+        return ResponseEntity.ok(responseDtoList);
+
+    }
+
+
+
+
+
+
 
 
 
