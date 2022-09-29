@@ -1,6 +1,7 @@
 package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.PlaceRequestDto;
+import com.dolphin.demo.dto.request.PlaceUpdateRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -79,7 +80,7 @@ public class Place {
     this.star = v2.divide(v1,1, RoundingMode.HALF_UP).floatValue();
   }
 
-  public void update(PlaceRequestDto requestDto){
+  public void update(PlaceUpdateRequestDto requestDto){
     this.title = requestDto.getTitle();
     this.content = requestDto.getContent();
     this.address = requestDto.getAddress();

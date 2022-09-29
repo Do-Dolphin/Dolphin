@@ -5,6 +5,7 @@ import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.PlaceImage;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.PlaceRequestDto;
+import com.dolphin.demo.dto.request.PlaceUpdateRequestDto;
 import com.dolphin.demo.dto.response.HeartResponseDto;
 import com.dolphin.demo.dto.response.PlaceListResponseDto;
 import com.dolphin.demo.dto.response.PlaceResponseDto;
@@ -47,6 +48,7 @@ public class PlaceService {
     @Value("${restAPI.key}")
     String apiKey;
 
+    //지역, 테마에 해당하는 place 리스트 반환(페이지)
     public ResponseEntity<List<PlaceListResponseDto>> getPlace(String theme, String areaCode, String sigunguCode, String pageNum) {
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNum), 10);
@@ -72,6 +74,10 @@ public class PlaceService {
         return ResponseEntity.ok(responseDtoList);
     }
 
+    /**
+     * 랜덤으로 지역을 하나 추천해준다.
+     * 이 지역 내에서 테마별 장소를 랜덤으로 하나씩 뽑아서 보내준다.
+     */
     public ResponseEntity<RandomPlaceResponseDto> randomPlace() {
         List<PlaceListResponseDto> randomList = new ArrayList<>();
         int areaCode = (int) (Math.random() * 17 + 1);
@@ -108,6 +114,7 @@ public class PlaceService {
                 .build());
     }
 
+    //태그에 해당하는 값 추출
     public String getTagValue(String tag, Element eElement) {
 
         //결과를 저장할 result 변수 선언
@@ -120,6 +127,7 @@ public class PlaceService {
         return result;
     }
 
+    // 광역시, 특별시에 해당하는 지역에서 해당하는 테마의 관광지 랜덤 추첨
     public PlaceListResponseDto randomArea(String areaCode, String theme) {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndTheme(String.valueOf(areaCode), theme);
@@ -145,6 +153,11 @@ public class PlaceService {
 
     }
 
+    /** 랜덤으로 돌린 지역 이름을 주소에서 추출
+     * n은 0 또는 1이다.
+     *  0은 광역시, 특별시 등에 해당하는 지역
+     *  1은 도 내에 있는 시, 군 지역
+     */
     public String getArea(PlaceListResponseDto responseDto, int n) {
         Place place = placeRepository.findById(responseDto.getId()).orElse(null);
         StringBuilder s = new StringBuilder();
@@ -156,6 +169,7 @@ public class PlaceService {
         return s.toString();
     }
 
+    //도 내에 시, 군 지역들의 해당하는 테마 랜덤 여행지 추첨
     public PlaceListResponseDto randomSigungu(String areaCode, String sigungu, String theme) {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigungu, theme);
@@ -207,6 +221,7 @@ public class PlaceService {
 
     }
 
+    //여행지 상세 내용을 반환
     public ResponseEntity<PlaceResponseDto> getPlaceDetail(Long id) {
 
         Place place = placeRepository.findById(id).orElse(null);
@@ -236,6 +251,7 @@ public class PlaceService {
 
     }
 
+    //장소 생성
     @Transactional
     public ResponseEntity<PlaceResponseDto> createPlace(UserDetailsImpl userDetails, PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
         if (userDetails == null)
@@ -296,8 +312,8 @@ public class PlaceService {
 
     }
 
-
-    public ResponseEntity<PlaceResponseDto> updatePlace(UserDetailsImpl userDetails, Long id, PlaceRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
+    // 장소 수정
+    public ResponseEntity<PlaceResponseDto> updatePlace(UserDetailsImpl userDetails, Long id, PlaceUpdateRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
         if (userDetails == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
@@ -312,12 +328,17 @@ public class PlaceService {
         List<PlaceImage> images = imageRepository.findAllByPlace(place);
         List<String> imageUrlList;
         List<String> requestImages = new ArrayList<>();
+
         // 버킷에서 이미지 삭제
-        for (int i = 0; i < images.size(); i++) {
-            amazonS3Service.deleteFile(images.get(i).getImageUrl().substring(images.get(i).getImageUrl().lastIndexOf("/") + 1));
+        for (PlaceImage placeImage : images) {
+            if (!placeRequestDto.getExistUrlList().contains(placeImage.getImageUrl())) {
+                amazonS3Service.deleteFile(placeImage.getImageUrl().substring(placeImage.getImageUrl().lastIndexOf("/") + 1));
+                imageRepository.delete(placeImage);
+            }
+            else {
+                requestImages.add(placeImage.getImageUrl());
+            }
         }
-        // DB 이미지 삭제
-        imageRepository.deleteAll(images);
 
         if (multipartFiles != null) {
             images.clear();
@@ -347,6 +368,7 @@ public class PlaceService {
                 .build());
     }
 
+    //장소 삭제
     @Transactional
     public ResponseEntity<String> deletePlace(Long id, UserDetailsImpl userDetails) {
 
@@ -365,6 +387,7 @@ public class PlaceService {
         return ResponseEntity.ok("delete place: " + id);
     }
 
+    //장소 찜하기
     @Transactional
     public ResponseEntity<HeartResponseDto> likePlace(Long id, UserDetailsImpl userDetails) {
         if (userDetails == null)
@@ -390,7 +413,6 @@ public class PlaceService {
             heartRepository.delete(heart);
             state = false;
         }
-        System.out.println(heartRepository.countByPlace(place));
         place.udateLikes(heartRepository.countByPlace(place));
         return ResponseEntity.ok(HeartResponseDto.builder()
                 .state(state)
@@ -399,6 +421,11 @@ public class PlaceService {
 
     }
 
+    /**
+     * 입력받은 id의 장소에서 사용자의 찜 상태
+     * 사용자가 로그인을 하지 않았거나, 찜 하지 않았다면 false
+     * 사용자가 찜을 한 상태라면 true
+     */
     public ResponseEntity<Boolean> getPlaceLikeState(Long id, UserDetailsImpl userDetails) {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
@@ -417,6 +444,7 @@ public class PlaceService {
         return ResponseEntity.ok(state);
     }
 
+    //사용자가 찜한 장소들의 리스트 반환
     public ResponseEntity<List<PlaceListResponseDto>> getLikePlaceList(UserDetailsImpl userDetails) {
         if (userDetails == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
@@ -475,7 +503,7 @@ public class PlaceService {
 
 
 
-
+//open api에서 데이터 저장
         @PostConstruct
         public void savePlace () {
             List<Place> places = new ArrayList<>();
