@@ -1,11 +1,19 @@
 package com.dolphin.demo.service;
 
+import com.dolphin.demo.domain.Heart;
+import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.PlaceImage;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.PlaceRequestDto;
+import com.dolphin.demo.dto.response.HeartResponseDto;
 import com.dolphin.demo.dto.response.PlaceListResponseDto;
 import com.dolphin.demo.dto.response.PlaceResponseDto;
 import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
+import com.dolphin.demo.exception.CustomException;
+import com.dolphin.demo.exception.ErrorCode;
+import com.dolphin.demo.jwt.UserDetailsImpl;
+import com.dolphin.demo.repository.HeartRepository;
+import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.PlaceImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +42,8 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
     private final PlaceImageRepository imageRepository;
     private final AmazonS3Service amazonS3Service;
+    private final MemberRepository memberRepository;
+    private final HeartRepository heartRepository;
     @Value("${restAPI.key}")
     String apiKey;
 
@@ -43,7 +53,6 @@ public class PlaceService {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
         for (Place place : placeList) {
-            System.out.println(place.getId());
             PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
@@ -79,13 +88,13 @@ public class PlaceService {
                     break;
             }
 
-            for (String theme: themes) {
+            for (String theme : themes) {
                 randomList.add(randomSigungu(String.valueOf(areaCode), String.valueOf(sigunguCode), theme));
             }
-            area =getArea(randomList.get(0),1);
+            area = getArea(randomList.get(0), 1);
 
-        } else{
-            for (String theme: themes) {
+        } else {
+            for (String theme : themes) {
 
                 randomList.add(randomArea(String.valueOf(areaCode), theme));
             }
@@ -174,11 +183,10 @@ public class PlaceService {
     }
 
 
-
-    public List<PlaceListResponseDto> getRank(int theme){
+    public List<PlaceListResponseDto> getRank(int theme) {
         PageRequest pageRequest = PageRequest.of(1, 10);
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
-        List<Place> placeList = placeRepository.findAllByThemeOrderByReadCountDesc(String.valueOf(theme),pageRequest);
+        List<Place> placeList = placeRepository.findAllByThemeOrderByReadCountDesc(String.valueOf(theme), pageRequest);
         for (Place place : placeList) {
             PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
             if (img != null)
@@ -203,10 +211,10 @@ public class PlaceService {
 
         Place place = placeRepository.findById(id).orElse(null);
 
-        if(place == null)
-            return ResponseEntity.notFound().build();
+        if (place == null)
+            throw new CustomException(ErrorCode.Not_Found_Place);
 
-        List<PlaceImage> img = imageRepository.findAllByPlaceId(place.getId());
+        List<PlaceImage> img = imageRepository.findAllByPlace(place);
         List<String> images = new ArrayList<>();
         if (!img.isEmpty())
             for (PlaceImage image : img) {
@@ -229,12 +237,18 @@ public class PlaceService {
     }
 
     @Transactional
-    public ResponseEntity<PlaceResponseDto> createPlace(PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
+    public ResponseEntity<PlaceResponseDto> createPlace(UserDetailsImpl userDetails, PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
         Long id = placeRepository.getTopByOrderByIdDesc().getId();
-        if(id < 5000000)
+        if (id < 5000000)
             id = 4999999L;
         Place place = Place.builder()
-                .id(id+1)
+                .id(id + 1)
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .address(requestDto.getAddress())
@@ -283,119 +297,253 @@ public class PlaceService {
     }
 
 
-//    public ResponseEntity<PlaceResponseDto> updatePlace(Long id, PlaceRequestDto placeRequestDto){
-//        Place place = placeRepository.findById(id).orElse(null);
-//        if(place == null)
-//            return ResponseEntity.notFound().build();
-//
-//        place.update(placeRequestDto);
-//
-//        return ResponseEntity.ok().body(PlaceResponseDto.builder()
-//                .id(place.getId())
-//                .title(place.getTitle())
-//                .content(place.getContent())
-//                .address(place.getAddress())
-//                .star(place.getStar())
-//                .theme(place.getTheme())
-//                .likes(place.getLikes())
-//                .mapX(place.getMapX())
-//                .mapY(place.getMapY())
-//                .imageUrl(imageList)
-//                .build());
-//    }
+    public ResponseEntity<PlaceResponseDto> updatePlace(UserDetailsImpl userDetails, Long id, PlaceRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Place place = placeRepository.findById(id).orElse(null);
+        if (place == null)
+            throw new CustomException(ErrorCode.Not_Found_Place);
+
+        place.update(placeRequestDto);
+
+        List<PlaceImage> images = imageRepository.findAllByPlace(place);
+        List<String> imageUrlList;
+        List<String> requestImages = new ArrayList<>();
+        // 버킷에서 이미지 삭제
+        for (int i = 0; i < images.size(); i++) {
+            amazonS3Service.deleteFile(images.get(i).getImageUrl().substring(images.get(i).getImageUrl().lastIndexOf("/") + 1));
+        }
+        // DB 이미지 삭제
+        imageRepository.deleteAll(images);
+
+        if (multipartFiles != null) {
+            images.clear();
+            imageUrlList = amazonS3Service.upload(multipartFiles);
+            for (String imageUrl : imageUrlList) {
+                PlaceImage image = PlaceImage.builder()
+                        .place(place)
+                        .imageUrl(imageUrl)
+                        .build();
+                images.add(image);
+                requestImages.add(image.getImageUrl());
+            }
+            imageRepository.saveAll(images);
+        }
+
+        return ResponseEntity.ok().body(PlaceResponseDto.builder()
+                .id(place.getId())
+                .title(place.getTitle())
+                .content(place.getContent())
+                .address(place.getAddress())
+                .star(place.getStar())
+                .theme(place.getTheme())
+                .likes(place.getLikes())
+                .mapX(place.getMapX())
+                .mapY(place.getMapY())
+                .imageUrl(requestImages)
+                .build());
+    }
+
+    @Transactional
+    public ResponseEntity<String> deletePlace(Long id, UserDetailsImpl userDetails) {
+
+        Place place = placeRepository.findById(id).orElse(null);
+        if (place == null)
+            throw new CustomException(ErrorCode.Not_Found_Place);
+        List<PlaceImage> images = imageRepository.findAllByPlace(place);
+        // 버킷에서 이미지 삭제
+        for (int i = 0; i < images.size(); i++) {
+            amazonS3Service.deleteFile(images.get(i).getImageUrl().substring(images.get(i).getImageUrl().lastIndexOf("/") + 1));
+        }
+        heartRepository.deleteAllByPlace(place);
+        placeRepository.delete(place);
 
 
+        return ResponseEntity.ok("delete place: " + id);
+    }
 
+    @Transactional
+    public ResponseEntity<HeartResponseDto> likePlace(Long id, UserDetailsImpl userDetails) {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
+        Place place = placeRepository.findById(id).orElse(null);
+        if (place == null)
+            throw new CustomException(ErrorCode.Not_Found_Place);
 
+        boolean state;
 
+        Heart heart = heartRepository.findByMemberAndPlace(member, place).orElse(null);
+        if (heart == null) {
+            heartRepository.save(Heart.builder()
+                    .place(place)
+                    .member(member)
+                    .build());
+            state = true;
+        } else {
+            heartRepository.delete(heart);
+            state = false;
+        }
+        System.out.println(heartRepository.countByPlace(place));
+        place.udateLikes(heartRepository.countByPlace(place));
+        return ResponseEntity.ok(HeartResponseDto.builder()
+                .state(state)
+                .count(place.getLikes())
+                .build());
 
+    }
 
+    public ResponseEntity<Boolean> getPlaceLikeState(Long id, UserDetailsImpl userDetails) {
+        Place place = placeRepository.findById(id).orElse(null);
+        if (place == null)
+            throw new CustomException(ErrorCode.Not_Found_Place);
 
-
-
-
-
-
-
-
-
-
-
-
-
-    @PostConstruct
-    public void savePlace() {
-        List<Place> places = new ArrayList<>();
-        List<PlaceImage> imageList = new ArrayList<>();
-        // 본인이 받은 api키를 추가
-        String key = "";
-        int totalCount = 0;
-        try {
-            // parsing할 url 지정(API 키 포함해서)
-            StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
-            url.append("?serviceKey=").append(apiKey);
-            url.append("&numOfRows=").append("1000");
-            url.append("&pageNo=1");
-            url.append("&MobileOS=ETC");
-            url.append("&MobileApp=dolphin");
-            url.append("&listYN=Y");
-            url.append("&arrange=B");
-            url.append("&areaCode=39");
-            url.append("&sigunguCode=4");
-
-
-            DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
-            Document doc = dBuilder.parse(url.toString());
-
-            // 제일 첫번째 태그
-            doc.getDocumentElement().normalize();
-
-            // 파싱할 tag
-            NodeList nList = doc.getElementsByTagName("item");
-            for (int temp = 0; temp < nList.getLength(); temp++) {
-                Node nNode = nList.item(temp);
-
-                Element eElement = (Element) nNode;
-
-                if (getTagValue("addr1", eElement).equals(""))
-                    continue;
-
-                Long id = Long.parseLong(getTagValue("contentid", eElement));
-                Place dbPlace = placeRepository.findById(id).orElse(null);
-                if (null == dbPlace) {
-                    Place place = Place.builder()
-                            .id(Long.parseLong(getTagValue("contentid", eElement)))
-                            .address(getTagValue("addr1", eElement))
-                            .theme(getTagValue("contenttypeid", eElement))
-                            .areaCode(getTagValue("areacode", eElement))
-                            .sigunguCode(getTagValue("sigungucode", eElement))
-                            .title(getTagValue("title", eElement))
-                            .content(getTagValue("content", eElement))
-                            .likes(0)
-                            .star(0)
-                            .mapX(getTagValue("mapx", eElement))
-                            .mapY(getTagValue("mapy", eElement))
-                            .readCount(Long.parseLong(getTagValue("readcount", eElement)))
-                            .build();
-
-                    places.add(place);
-                    String img = getTagValue("firstimage", eElement);
-                    if (!img.equals(""))
-                        imageList.add(PlaceImage.builder()
-                                .place(place)
-                                .imageUrl(img)
-                                .build());
+        boolean state = false;
+        if(userDetails != null) {
+            Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+            if (member != null) {
+                Heart heart = heartRepository.findByMemberAndPlace(member, place).orElse(null);
+                if (heart != null) {
+                    state = true;
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
-        placeRepository.saveAll(places);
-        imageRepository.saveAll(imageList);
-        System.out.println("save end");
-    }}
+        return ResponseEntity.ok(state);
+    }
+
+    public ResponseEntity<List<PlaceListResponseDto>> getLikePlaceList(UserDetailsImpl userDetails) {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
+        List<Heart> hearts = heartRepository.findAllByMember(member);
+
+        List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
+
+        for (Heart heart : hearts) {
+            Place place = heart.getPlace();
+            PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+            if (img != null)
+                responseDtoList.add(PlaceListResponseDto.builder()
+                        .id(place.getId())
+                        .title(place.getTitle())
+                        .star(place.getStar())
+                        .image(img.getImageUrl())
+                        .build());
+            else
+                responseDtoList.add(PlaceListResponseDto.builder()
+                        .id(place.getId())
+                        .title(place.getTitle())
+                        .star(place.getStar())
+                        .build());
+        }
+        return ResponseEntity.ok(responseDtoList);
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        @PostConstruct
+        public void savePlace () {
+            List<Place> places = new ArrayList<>();
+            List<PlaceImage> imageList = new ArrayList<>();
+            try {
+                // parsing할 url 지정(API 키 포함해서)
+                StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
+                url.append("?serviceKey=").append(apiKey);
+                url.append("&numOfRows=").append("1000");
+                url.append("&pageNo=1");
+                url.append("&MobileOS=ETC");
+                url.append("&MobileApp=dolphin");
+                url.append("&listYN=Y");
+                url.append("&arrange=B");
+                url.append("&areaCode=39");
+                url.append("&sigunguCode=4");
+
+
+                DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
+                Document doc = dBuilder.parse(url.toString());
+
+                // 파싱할 tag
+                NodeList nList = doc.getElementsByTagName("item");
+                for (int temp = 0; temp < nList.getLength(); temp++) {
+                    Node nNode = nList.item(temp);
+
+                    Element eElement = (Element) nNode;
+
+                    if (getTagValue("addr1", eElement).equals(""))
+                        continue;
+
+                    Long id = Long.parseLong(getTagValue("contentid", eElement));
+                    Place dbPlace = placeRepository.findById(id).orElse(null);
+                    if (null == dbPlace) {
+                        Place place = Place.builder()
+                                .id(Long.parseLong(getTagValue("contentid", eElement)))
+                                .address(getTagValue("addr1", eElement))
+                                .theme(getTagValue("contenttypeid", eElement))
+                                .areaCode(getTagValue("areacode", eElement))
+                                .sigunguCode(getTagValue("sigungucode", eElement))
+                                .title(getTagValue("title", eElement))
+                                .content(getTagValue("content", eElement))
+                                .likes(0)
+                                .star(0)
+                                .mapX(getTagValue("mapx", eElement))
+                                .mapY(getTagValue("mapy", eElement))
+                                .readCount(Long.parseLong(getTagValue("readcount", eElement)))
+                                .build();
+
+                        places.add(place);
+                        String img = getTagValue("firstimage", eElement);
+                        if (!img.equals(""))
+                            imageList.add(PlaceImage.builder()
+                                    .place(place)
+                                    .imageUrl(img)
+                                    .build());
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            placeRepository.saveAll(places);
+            imageRepository.saveAll(imageList);
+            System.out.println("save end");
+        }
+
+    }
 
 
 //    @PostConstruct
