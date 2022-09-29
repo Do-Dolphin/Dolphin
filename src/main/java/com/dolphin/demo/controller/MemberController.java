@@ -17,14 +17,7 @@ import javax.validation.Valid;
 public class MemberController {
 
     private final MemberService memberService;
-
-
-    //중복 아이디(이메일) 확인
-    @PostMapping("/api/member/duplicate")
-    public ResponseEntity<String> duplicateUsername(@Valid @RequestBody LoginRequestDto requestDto) {
-        return memberService.duplicateUsername(requestDto);
-    }
-
+    
     //회원가입
     @PostMapping("/api/member/signup")
     public ResponseEntity<String> signup(@Valid @RequestBody SignupRequestDto requestDto) {
@@ -58,7 +51,5 @@ public class MemberController {
 
         return memberService.reToken(accessToken, refreshToken);
     }
-
-
 
 }
