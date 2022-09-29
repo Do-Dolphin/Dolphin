@@ -37,16 +37,6 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    @Transactional(readOnly = true)
-    public ResponseEntity<String> duplicateUsername(LoginRequestDto requestDto) {
-        System.out.println(requestDto.getUsername());
-        if (memberRepository.existsByUsername(requestDto.getUsername())) {
-            throw new IllegalArgumentException("중복된 이메일이 존재합니다.");
-        }
-
-        return new ResponseEntity<>("사용가능한 이메일입니다", HttpStatus.OK);
-    }
-
     @Transactional
     public ResponseEntity<String> signup(SignupRequestDto requestDto) {
         System.out.println(requestDto.getUsername());
