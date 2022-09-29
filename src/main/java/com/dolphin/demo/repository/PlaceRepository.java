@@ -12,5 +12,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     List<Place> findAllByAreaCodeAndSigunguCodeAndTheme(String areaCode, String sigunguCode, String theme);
     List<Place> findAllByAreaCodeAndTheme(String areaCode, String theme);
     List<Place> findAllByThemeOrderByReadCountDesc(String theme, PageRequest pageRequest);
+    Place getTopByOrderByIdDesc();
 
 }

@@ -1,6 +1,5 @@
 package com.dolphin.demo.controller;
 
-import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.request.LoginRequestDto;
 import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;

@@ -1,6 +1,7 @@
 package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.NicknameDto;
+
 import lombok.*;
 
 import javax.persistence.*;
@@ -26,10 +27,6 @@ public class Member {
 
     @Column
     private String nickname;
-
-    @Column
-    @Enumerated(value = EnumType.STRING)
-    private MemberRoleEnum role;
 
     public void updateNickname(NicknameDto nicknameDto){
         this.nickname = nicknameDto.getNickname();

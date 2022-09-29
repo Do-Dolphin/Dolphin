@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
-/* AWS S3에 접근하기 위한 설정 */
+// AWS S3에 접근하기 위한 설정
 @Configuration
 public class AmazonS3Config {
 
@@ -23,7 +23,7 @@ public class AmazonS3Config {
     private String region;
 
 
-    /* S3 클라이언트 객체 생성하고 이 객체를 이용하여 S3 버킷에 접근 */
+    // S3 클라이언트 객체 생성하고 이 객체를 이용하여 S3 버킷에 접근
     @Bean
     public AmazonS3Client amazonS3Client() {
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);

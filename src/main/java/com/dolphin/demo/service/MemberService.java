@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.mail.internet.MimeMessage;
 import javax.validation.Valid;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

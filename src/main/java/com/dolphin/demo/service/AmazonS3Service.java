@@ -26,6 +26,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +52,7 @@ public class AmazonS3Service {
     @Transactional
     public List<String> upload(List<MultipartFile> multipartFiles) throws IOException {
 
-        if (multipartFiles.get(0).isEmpty()) {
+        if (multipartFiles == null) {
             return Collections.emptyList();
         }
 
@@ -59,8 +62,8 @@ public class AmazonS3Service {
         List<String> imageUrlList = new ArrayList<>();
         multipartFiles.forEach(file -> {
             /* 고유한 파일 이름 생성 */
-            String filename = createFilename(file.getOriginalFilename());
             String fileFormatName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+            String filename = createFilename(fileFormatName);
 
             MultipartFile resizedFile = resizeImage(filename, fileFormatName, file, 800);
 
@@ -92,8 +95,8 @@ public class AmazonS3Service {
 
 
     // 고유한 파일 이름 생성
-    public String createFilename(String filename) {
-        return UUID.randomUUID().toString().concat(filename);
+    public String createFilename(String fileFormatName) {
+        return UUID.randomUUID().toString().concat("." + fileFormatName);
     }
 
 
@@ -142,14 +145,10 @@ public class AmazonS3Service {
             MockMultipartFile mockMultipartFile = new MockMultipartFile(filename, baos.toByteArray());
             baos.flush();
 
-
             return mockMultipartFile;
-//            byte[] bytes = baos.toByteArray();
-//            return new CustomMultipartFile(bytes, filename, fileFormatName, bytes.length);
 
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 리사이즈에 실패했습니다.");
         }
     }
-
 }
