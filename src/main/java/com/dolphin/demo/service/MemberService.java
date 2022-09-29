@@ -42,9 +42,8 @@ public class MemberService {
         if (memberRepository.existsByUsername(requestDto.getUsername())) {
             throw new IllegalArgumentException("중복된 이메일이 존재합니다.");
         }
-        String massege = "사용가능한 이메일입니다.";
 
-        return new ResponseEntity<>(massege, HttpStatus.OK);
+        return new ResponseEntity<>("사용가능한 이메일입니다", HttpStatus.OK);
     }
 
     @Transactional
@@ -57,9 +56,6 @@ public class MemberService {
             throw new IllegalArgumentException("아이디 중복체크는 필수입니다.");
         }
 
-//        // 인증 메일 전송
-//        emailConfirmTokenService.createEmailConfirmationToken(requestDto.getUsername());
-
         String nickname = rendomNickname();
         while (null != memberRepository.findByNickname(nickname).orElse(null)){
             nickname = rendomNickname();
@@ -71,18 +67,19 @@ public class MemberService {
                 .build();
         memberRepository.save(member);
 
-        String message = member.getNickname()+"님 회원가입을 환영합니다" ;
-
-        return new ResponseEntity<>(message, HttpStatus.OK);
+        return new ResponseEntity<>(member.getNickname()+"님 회원가입을 환영합니다.", HttpStatus.OK);
     }
 
     public ResponseEntity<String> logout(Long memberId, String refreshToken) {
         memberRepository.findById(memberId).orElseThrow(
                 () -> new IllegalArgumentException("로그아웃 실패")
         );
-        redisService.deleteValues(refreshToken);
-        String message = "로그아웃되었습니다.";
-        return new ResponseEntity<>(message, HttpStatus.OK);
+
+        String[] token = refreshToken.split(" ");
+        System.out.println(token[1]);
+        redisService.deleteValues(token[1]);
+
+        return new ResponseEntity<>("로그아웃되었습니다.", HttpStatus.OK);
     }
 
     @Transactional
@@ -99,9 +96,7 @@ public class MemberService {
         //토큰 만들기
         tokensProcess(member.getUsername());
 
-        String message = member.getNickname()+"님 방문을 환영합니다" ;
-
-        return new ResponseEntity<>(message,HttpStatus.OK);
+        return new ResponseEntity<>(member.getNickname()+"님 방문을 환영합니다.",HttpStatus.OK);
     }
 
     public void tokensProcess(String username) {
@@ -136,9 +131,7 @@ public class MemberService {
         // 기존 토큰 삭제
         redisService.deleteValues(token);
 
-        String message = "token 갱신 완료";
-
-        return new ResponseEntity<>(message, HttpStatus.OK);
+        return new ResponseEntity<>("token 갱신 완료", HttpStatus.OK);
     }
 
     public String rendomNickname() {
@@ -175,7 +168,6 @@ public class MemberService {
                 "쿼카", "친칠라", "해파리", "고구마", "감자", "이삭", "빵순이", "오소리", "완두콩", "지렁이", "삽살개", "수학자", "과학자", "선생님", "변호사" );
 
 
-//        System.out.println(location.size()*action.size()* anyone.size());
         Collections.shuffle(location);
         Collections.shuffle(action);
         Collections.shuffle(anyone);
@@ -189,8 +181,8 @@ public class MemberService {
                 () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
         );
         member.updateNickname(nicknameDto);
-        String message = "닉네임이 "+member.getNickname()+"로 변경되었습니다.";
-        return new ResponseEntity<>(message,HttpStatus.OK);
+
+        return new ResponseEntity<>("닉네임이 "+member.getNickname()+"로 변경되었습니다.",HttpStatus.OK);
     }
 
 }

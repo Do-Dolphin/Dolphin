@@ -26,6 +26,7 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public String getUsername() { return member.getUsername(); }
 
+    //계정이 만료되었는지 리턴. (true: 만료되지 않음)
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -37,7 +38,7 @@ public class UserDetailsImpl implements UserDetails {
         return true;
     }
 
-    //계정이 만료되지 않았는지 리턴 (true: 만료 안됨)
+    //패스워드 만료되지 않았는지 리턴 (true: 만료 안됨)
     @Override
     public boolean isCredentialsNonExpired() {
         return true;

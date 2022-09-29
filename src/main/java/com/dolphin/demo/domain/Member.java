@@ -1,9 +1,7 @@
 package com.dolphin.demo.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.dolphin.demo.dto.request.NicknameDto;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -12,6 +10,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Setter
 public class Member {
 
     @Id
@@ -28,5 +27,12 @@ public class Member {
     @Column
     private String nickname;
 
+    @Column
+    @Enumerated(value = EnumType.STRING)
+    private MemberRoleEnum role;
+
+    public void updateNickname(NicknameDto nicknameDto){
+        this.nickname = nicknameDto.getNickname();
+    }
 
 }
