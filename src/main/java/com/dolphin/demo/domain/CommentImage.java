@@ -1,10 +1,12 @@
 package com.dolphin.demo.domain;
 
+import com.dolphin.demo.dto.request.ImageRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
+import java.util.Objects;
 
 
 @AllArgsConstructor
