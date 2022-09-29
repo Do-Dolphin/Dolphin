@@ -171,24 +171,27 @@ public class CommentService {
 
             // 새로 등록하는 이미지가 있는 경우
         } else {
+            /**
+             * 1. image의 ImageUrl : 기존에 등록된 이미지
+             * 2. imageRequestDto의 ExistUrlList : 기존 이미지 중, 수정할 때 삭제되지 않고 남아있는 이미지
+             * 3. 1, 2번을 비교하여 같은 URL이 존재할 경우 imageList에 추가하고 없을 경우 S3와 DB에서 삭제
+             */
             for (int i=0; i<image.size(); i++) {
-                /**
-                 * 1. image의 ImageUrl : 기존에 등록된 이미지
-                 * 2. imageRequestDto의 ExistUrlList : 기존 이미지 중, 수정할 때 삭제되지 않고 남아있는 이미지
-                 * 3. 1, 2번을 비교하여 같은 URL이 존재할 경우 imageList에 추가하고 없을 경우 S3와 DB에서 삭제
-                 */
-                for (int j = 0; j < imageRequestDto.getExistUrlList().size(); j++) {
+                for (int j = 0; j < imageRequestDto.getExistUrlList().size(); j++)
                     if (image.get(i).getImageUrl().equals(imageRequestDto.getExistUrlList().get(j))) {
                         imageList.add(imageRequestDto.getExistUrlList().get(j));
-                    } else {
-                    // S3 저장소에 있는 이미지 삭제하기
-                        amazonS3Service.deleteFile(image.get(i).getImageUrl().substring(image.get(i).getImageUrl().lastIndexOf("/") + 1));
-
-                        // DB 이미지 삭제
-                        commentImageRepository.delete(image.get(i));
                     }
+            }
+            // S3 저장소에 있는 이미지 삭제하기
+            for (int k=0; k<image.size(); k++) {
+                if (!imageList.contains(image.get(k).getImageUrl())) {
+                    amazonS3Service.deleteFile(image.get(k).getImageUrl().substring(image.get(k).getImageUrl().lastIndexOf("/") + 1));
+
+                    // DB 이미지 삭제
+                    commentImageRepository.delete(image.get(k));
                 }
             }
+
 
 
             // 새로운 이미지 등록
