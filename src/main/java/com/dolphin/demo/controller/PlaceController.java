@@ -1,6 +1,7 @@
 package com.dolphin.demo.controller;
 
 import com.dolphin.demo.dto.request.PlaceRequestDto;
+import com.dolphin.demo.dto.request.PlaceUpdateRequestDto;
 import com.dolphin.demo.dto.response.*;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.PlaceService;
@@ -59,7 +60,7 @@ public class PlaceController {
     @PutMapping("api/auth/place/{id}")
     public ResponseEntity<PlaceResponseDto> updatePlace(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                         @PathVariable Long id,
-                                                        @RequestPart("data")PlaceRequestDto placeRequestDto,
+                                                        @RequestPart("data") PlaceUpdateRequestDto placeRequestDto,
                                                         @RequestPart(value = "image", required = false)List<MultipartFile> multipartFile) throws IOException {
         return placeService.updatePlace(userDetails, id, placeRequestDto, multipartFile);
     }

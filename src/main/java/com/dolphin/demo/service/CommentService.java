@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.dolphin.demo.exception.ErrorCode.DO_NOT_MATCH_USER;
@@ -172,27 +173,21 @@ public class CommentService {
             // 새로 등록하는 이미지가 있는 경우
         } else {
             /**
-             * 1. image의 ImageUrl : 기존에 등록된 이미지
-             * 2. imageRequestDto의 ExistUrlList : 기존 이미지 중, 수정할 때 삭제되지 않고 남아있는 이미지
-             * 3. 1, 2번을 비교하여 같은 URL이 존재할 경우 imageList에 추가하고 없을 경우 S3와 DB에서 삭제
+             * 기존에 등록된 이미지 처리
+             * 기존 이미지 URL 리스트와 수정해서 넘어오는 URL 리스트를 비교하여
+             * 수정해서 넘어오는 URL 리스트에 해당하지 않는 기존 이미지 URL은 사용자가 삭제한 것이므로 삭제 처리
              */
-            for (int i=0; i<image.size(); i++) {
-                for (int j = 0; j < imageRequestDto.getExistUrlList().size(); j++)
-                    if (image.get(i).getImageUrl().equals(imageRequestDto.getExistUrlList().get(j))) {
-                        imageList.add(imageRequestDto.getExistUrlList().get(j));
-                    }
-            }
-            // S3 저장소에 있는 이미지 삭제하기
-            for (int k=0; k<image.size(); k++) {
-                if (!imageList.contains(image.get(k).getImageUrl())) {
-                    amazonS3Service.deleteFile(image.get(k).getImageUrl().substring(image.get(k).getImageUrl().lastIndexOf("/") + 1));
-
+            for (CommentImage commentImage : image) {
+                if (!imageRequestDto.getExistUrlList().contains(commentImage.getImageUrl())) {
+                    // S3 저장소에서 삭제
+                    amazonS3Service.deleteFile(commentImage.getImageUrl().substring(commentImage.getImageUrl().lastIndexOf("/") + 1));
                     // DB 이미지 삭제
-                    commentImageRepository.delete(image.get(k));
+                    commentImageRepository.delete(commentImage);
+                }
+                else {
+                    imageList.add(commentImage.getImageUrl());
                 }
             }
-
-
 
             // 새로운 이미지 등록
             List<String> imageUrlList;
