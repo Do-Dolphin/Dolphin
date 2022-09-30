@@ -10,4 +10,5 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findAllByOrderByStateAsc();
+    List<Order> findAllByStateTrue();
 }

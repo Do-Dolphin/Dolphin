@@ -15,13 +15,17 @@ import com.dolphin.demo.repository.OrderRepository;
 import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -33,8 +37,9 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final AmazonS3Service amazonS3Service;
     private final OrderImageRepository orderImageRepository;
-    private final PlaceRepository placeRepository;
     private final MemberRepository memberRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger("오더 삭제 로그");
 
 
     public ResponseEntity<OrderResponseDto> getOrder(Long id) {
@@ -189,5 +194,17 @@ public class OrderService {
         order.updateState(order.isState());
 
         return ResponseEntity.ok().body(order.isState());
+    }
+
+
+
+    @Scheduled(cron = "0 0 18 * * 5")
+    public void deleteOrder(){
+        logger.info(new Date() + " 스케쥴러 실행");
+        List<Order> orders = orderRepository.findAllByStateTrue();
+        for (Order order : orders) {
+            logger.info("Delete Order : "+order.getId());
+        }
+        orderRepository.deleteAll(orders);
     }
 }
