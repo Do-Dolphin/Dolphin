@@ -1,6 +1,7 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.Member;
+import com.dolphin.demo.domain.MemberRoleEnum;
 import com.dolphin.demo.dto.request.LoginRequestDto;
 import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
@@ -55,6 +56,7 @@ public class MemberService {
                 .username(requestDto.getUsername())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
                 .nickname(nickname)
+                .role(MemberRoleEnum.MEMBER)
                 .build();
         memberRepository.save(member);
 
@@ -176,6 +178,23 @@ public class MemberService {
         return new ResponseEntity<>("닉네임이 "+member.getNickname()+"로 변경되었습니다.",HttpStatus.OK);
     }
 
+    //비밀번호 변경
+    @Transactional
+    public ResponseEntity<String> updatePassword(Member memberinfo, NicknameDto nicknameDto) {
+        Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
+                () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
+        );
+        if(passwordEncoder.matches(member.getPassword(), nicknameDto.getPassword())){
+            return new ResponseEntity<>("아이디와 비밀번호가 같지않습니다.",HttpStatus.OK);
+        }
+        if (!nicknameDto.getNewPassword().equals(nicknameDto.getNewPasswordConfirm())) {
+            return new ResponseEntity<>("새로운 비번이 동일하지 않습니다.",HttpStatus.OK);
+        }
+
+        member.updatePassword(nicknameDto);
+
+        return new ResponseEntity<>("패스워드가 성공적으로 변경되었습니다.",HttpStatus.OK);
+    }
 }
 
 

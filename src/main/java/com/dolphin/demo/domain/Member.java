@@ -28,8 +28,16 @@ public class Member {
     @Column
     private String nickname;
 
+    @Column
+    @Enumerated(value = EnumType.STRING)
+    private MemberRoleEnum role;
+
     public void updateNickname(NicknameDto nicknameDto){
         this.nickname = nicknameDto.getNickname();
+    }
+
+    public void updatePassword(NicknameDto nicknameDto){
+        this.password = nicknameDto.getPassword();
     }
 
 }
