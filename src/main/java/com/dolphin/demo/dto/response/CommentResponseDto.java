@@ -16,6 +16,7 @@ public class CommentResponseDto {
 
     private Long comment_id;
     private Long place_id;
+    private String placeTitle;
     private String nickname;
     private String title;
     private String content;

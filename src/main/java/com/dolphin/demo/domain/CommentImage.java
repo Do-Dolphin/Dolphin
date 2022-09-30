@@ -1,12 +1,10 @@
 package com.dolphin.demo.domain;
 
-import com.dolphin.demo.dto.request.ImageRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
-import java.util.Objects;
 
 
 @AllArgsConstructor
@@ -29,10 +27,8 @@ public class CommentImage extends Timestamped {
     private Comment comment;
 
 
-
-    public void update(Comment comment, CommentImage image) {
-        this.comment = comment;
-        this.imageUrl = image.getImageUrl();
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
 }

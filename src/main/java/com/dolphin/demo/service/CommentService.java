@@ -1,30 +1,23 @@
 package com.dolphin.demo.service;
 
-import com.dolphin.demo.domain.Comment;
-import com.dolphin.demo.domain.CommentImage;
-import com.dolphin.demo.domain.Member;
-import com.dolphin.demo.domain.Place;
+import com.dolphin.demo.domain.*;
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.request.ImageRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
 import com.dolphin.demo.exception.CustomException;
+import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
-import com.dolphin.demo.repository.CommentRepository;
-import com.dolphin.demo.repository.CommentImageRepository;
-import com.dolphin.demo.repository.MemberRepository;
-import com.dolphin.demo.repository.PlaceRepository;
+import com.dolphin.demo.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.dolphin.demo.exception.ErrorCode.DO_NOT_MATCH_USER;
+import static com.dolphin.demo.exception.ErrorCode.Not_Found_Place;
 
 
 @RequiredArgsConstructor
@@ -41,9 +34,7 @@ public class CommentService {
     // 여행지 상세페이지 후기 조회
     public ResponseEntity<List<CommentResponseDto>> getComment(Long place_id) {
 
-        // 예외처리 추가 예정
-
-        // 해당 여행지의 모든 후기를 작성일 기준 최신순으로 불러옴 ,, 수정 예정
+        // 해당 여행지의 모든 후기를 불러옴
         List<Comment> commentList = commentRepository.findAllByPlaceId(place_id);
 
 
@@ -63,6 +54,7 @@ public class CommentService {
             CommentResponseDto commentResponseDto = CommentResponseDto.builder()
                     .comment_id(comments.getId())
                     .place_id(comments.getPlace().getId())
+                    .placeTitle(comments.getPlace().getTitle())
                     .nickname(comments.getMember().getNickname())
                     .title(comments.getTitle())
                     .content(comments.getContent())
@@ -82,11 +74,15 @@ public class CommentService {
     public ResponseEntity<CommentResponseDto> createComment(Long place_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile, UserDetailsImpl userDetails) throws IOException {
 
         // 로그인한 회원인지 여부 검증
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
         // 여행지 존재 여부 검증
         Place place = placeRepository.findById(place_id)
-                .orElseThrow(() -> new IllegalArgumentException("여행지가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(Not_Found_Place));
 
         // 제목, 내용, 별점을 저장
         Comment comment = new Comment(commentRequestDto, place, member);
@@ -103,6 +99,7 @@ public class CommentService {
         for (String imageUrl : imageUrlList) {
             CommentImage image = CommentImage.builder()
                     .comment(comment)
+                    .member(member)
                     .imageUrl(imageUrl)
                     .build();
             saveImages.add(image);
@@ -113,6 +110,7 @@ public class CommentService {
         return ResponseEntity.ok().body(CommentResponseDto.builder()
                 .comment_id(comment.getId())
                 .place_id(comment.getPlace().getId())
+                .placeTitle(comment.getPlace().getTitle())
                 .nickname(comment.getMember().getNickname())
                 .title(comment.getTitle())
                 .content(comment.getContent())
@@ -128,7 +126,11 @@ public class CommentService {
     public ResponseEntity<CommentResponseDto> updateComment(Long comment_id, ImageRequestDto imageRequestDto, List<MultipartFile> multipartFile, UserDetailsImpl userDetails) throws IOException {
 
         // 로그인한 회원인지 여부 검증
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(comment_id)
@@ -161,6 +163,7 @@ public class CommentService {
             return ResponseEntity.ok().body(CommentResponseDto.builder()
                     .comment_id(comment.getId())
                     .place_id(comment.getPlace().getId())
+                    .placeTitle(comment.getPlace().getTitle())
                     .nickname(comment.getMember().getNickname())
                     .title(comment.getTitle())
                     .content(comment.getContent())
@@ -197,6 +200,7 @@ public class CommentService {
             for (String imageUrls : imageUrlList) {
                 CommentImage images = CommentImage.builder()
                         .comment(comment)
+                        .member(member)
                         .imageUrl(imageUrls)
                         .build();
                 saveImage.add(images);
@@ -206,6 +210,7 @@ public class CommentService {
             return ResponseEntity.ok().body(CommentResponseDto.builder()
                     .comment_id(comment.getId())
                     .place_id(comment.getPlace().getId())
+                    .placeTitle(comment.getPlace().getTitle())
                     .nickname(comment.getMember().getNickname())
                     .title(comment.getTitle())
                     .content(comment.getContent())
@@ -223,7 +228,11 @@ public class CommentService {
     public ResponseEntity<Long> deleteComment(Long id, UserDetailsImpl userDetails) throws IOException {
 
         // 로그인한 회원인지 여부 검증
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(id)
@@ -247,6 +256,51 @@ public class CommentService {
         commentRepository.delete(comment);
 
         return ResponseEntity.ok().body(id);
+    }
+
+    // 내가 쓴 후기 불러오기(마이페이지)
+    public ResponseEntity<List<CommentResponseDto>> getMyCommentList(UserDetailsImpl userDetails) {
+
+        // 로그인한 회원인지 여부 검증
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
+        // 해당 사용자의 모든 후기 불러오기
+        List<Comment> commentList = commentRepository.findAllByMemberId(member.getId());
+        // 해당 사용자의 후기별 이미지 불러오기
+
+        // 보여줄 데이터
+        List<CommentResponseDto> commentResult = new ArrayList<>();
+
+        // 불러온 모든 후기와 후기별 이미지를 comments에 담기
+        for (Comment comments : commentList) {
+            // 후기별 이미지 리스트 꺼내오기
+            List<CommentImage> imageResult = commentImageRepository.findAllByCommentId(comments.getId());
+            List<String> imageList = new ArrayList<>();
+            // 꺼내온 이미지들을 imageList에 담기
+            for(CommentImage images : imageResult) {
+                imageList.add(images.getImageUrl());
+            }
+
+            CommentResponseDto commentResponseDto = CommentResponseDto.builder()
+                    .comment_id(comments.getId())
+                    .place_id(comments.getPlace().getId())
+                    .placeTitle(comments.getPlace().getTitle())
+                    .nickname(comments.getMember().getNickname())
+                    .title(comments.getTitle())
+                    .content(comments.getContent())
+                    .imageList(imageList)
+                    .star(comments.getStar())
+                    .createdAt(comments.getCreatedAt())
+                    .modifiedAt(comments.getModifiedAt())
+                    .build();
+            commentResult.add(commentResponseDto);
+        }
+
+        return ResponseEntity.ok().body(commentResult);
     }
 
 }
