@@ -1,6 +1,7 @@
 package com.dolphin.demo.domain;
 
 import com.dolphin.demo.dto.request.CommentRequestDto;
+import com.dolphin.demo.dto.request.ImageRequestDto;
 import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -11,7 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Setter
 @Entity
 public class Comment extends Timestamped {
 
@@ -55,7 +55,7 @@ public class Comment extends Timestamped {
     }
 
 
-    public void update(CommentRequestDto commentRequestDto) {
+    public void update(ImageRequestDto commentRequestDto) {
         this.title = commentRequestDto.getTitle();
         this.content = commentRequestDto.getContent();
         this.star = commentRequestDto.getStar();

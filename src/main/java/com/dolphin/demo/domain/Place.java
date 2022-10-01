@@ -1,6 +1,5 @@
 package com.dolphin.demo.domain;
 
-import com.dolphin.demo.dto.request.PlaceRequestDto;
 import com.dolphin.demo.dto.request.PlaceUpdateRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +9,6 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
 
 @Builder
@@ -24,40 +22,51 @@ public class Place {
   @Column(name = "place_id")
   private Long id;
 
-
+  //장소 이름
   @Column(nullable = false)
   private String title;
 
+  //장소 설명
   @Column(nullable = false)
   private String content;
 
+  //장소에 대한 후기 평점
   @Column(nullable = false)
   private float star;
 
+  //찜한 멤버들의 수
   @Column(nullable = false)
   private int likes;
 
+  //테마 코드
   @Column(nullable = false)
   private String theme;
 
+  //장소 주소
   @Column(nullable = false)
   private String address;
 
+  //지역 코드
   @Column(nullable = false)
   private String areaCode;
 
+  //시군구 코드
   @Column(nullable = false)
   private String sigunguCode;
 
+  //X좌표
   @Column(nullable = false)
   private String mapX;
 
+  //Y좌표
   @Column(nullable = false)
   private String mapY;
 
+  //평점 총 합
   @Column(nullable = false)
   private int total;
 
+  //후기 개수
   @Column(nullable = false)
   private int count;
 

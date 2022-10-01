@@ -1,9 +1,7 @@
 package com.dolphin.demo.dto.request;
 
-import lombok.Builder;
 import lombok.Getter;
 
-@Builder
 @Getter
 public class AddPlaceOrderRequestDto {
     private String title;

@@ -254,13 +254,7 @@ public class PlaceService {
 
     //장소 생성
     @Transactional
-    public ResponseEntity<PlaceResponseDto> createPlace(UserDetailsImpl userDetails, PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
-        if (member == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-
+    public ResponseEntity<PlaceResponseDto> createPlace(PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
         Long id = placeRepository.getTopByOrderByIdDesc().getId();
         if (id < 5000000)
             id = 4999999L;
@@ -314,12 +308,7 @@ public class PlaceService {
     }
 
     // 장소 수정
-    public ResponseEntity<PlaceResponseDto> updatePlace(UserDetailsImpl userDetails, Long id, PlaceUpdateRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
-        if (member == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+    public ResponseEntity<PlaceResponseDto> updatePlace(Long id, PlaceUpdateRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
             throw new CustomException(ErrorCode.Not_Found_Place);
@@ -370,7 +359,7 @@ public class PlaceService {
 
     //장소 삭제
     @Transactional
-    public ResponseEntity<String> deletePlace(Long id, UserDetailsImpl userDetails) {
+    public ResponseEntity<String> deletePlace(Long id) {
 
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
