@@ -55,7 +55,7 @@ public class PlaceService {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
         for (Place place : placeList) {
-            PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+            PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
@@ -134,7 +134,7 @@ public class PlaceService {
 
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
-        PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+        PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
         if (img != null)
             return PlaceListResponseDto.builder()
                     .id(place.getId())
@@ -153,10 +153,11 @@ public class PlaceService {
 
     }
 
-    /** 랜덤으로 돌린 지역 이름을 주소에서 추출
+    /**
+     * 랜덤으로 돌린 지역 이름을 주소에서 추출
      * n은 0 또는 1이다.
-     *  0은 광역시, 특별시 등에 해당하는 지역
-     *  1은 도 내에 있는 시, 군 지역
+     * 0은 광역시, 특별시 등에 해당하는 지역
+     * 1은 도 내에 있는 시, 군 지역
      */
     public String getArea(PlaceListResponseDto responseDto, int n) {
         Place place = placeRepository.findById(responseDto.getId()).orElse(null);
@@ -177,7 +178,7 @@ public class PlaceService {
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
 
-        PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+        PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
         if (img != null)
             return PlaceListResponseDto.builder()
                     .id(place.getId())
@@ -202,7 +203,7 @@ public class PlaceService {
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
         List<Place> placeList = placeRepository.findAllByThemeOrderByReadCountDesc(String.valueOf(theme), pageRequest);
         for (Place place : placeList) {
-            PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+            PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
@@ -334,8 +335,7 @@ public class PlaceService {
             if (!placeRequestDto.getExistUrlList().contains(placeImage.getImageUrl())) {
                 amazonS3Service.deleteFile(placeImage.getImageUrl().substring(placeImage.getImageUrl().lastIndexOf("/") + 1));
                 imageRepository.delete(placeImage);
-            }
-            else {
+            } else {
                 requestImages.add(placeImage.getImageUrl());
             }
         }
@@ -432,7 +432,7 @@ public class PlaceService {
             throw new CustomException(ErrorCode.Not_Found_Place);
 
         boolean state = false;
-        if(userDetails != null) {
+        if (userDetails != null) {
             Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
             if (member != null) {
                 Heart heart = heartRepository.findByMemberAndPlace(member, place).orElse(null);
@@ -458,7 +458,7 @@ public class PlaceService {
 
         for (Heart heart : hearts) {
             Place place = heart.getPlace();
-            PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+            PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
@@ -478,106 +478,82 @@ public class PlaceService {
     }
 
 
+    //open api에서 데이터 저장
+    @Transactional
+    @PostConstruct
+    public void savePlace() {
+        List<Place> places = new ArrayList<>();
+        List<PlaceImage> imageList = new ArrayList<>();
+        try {
+            // parsing할 url 지정(API 키 포함해서)
+            StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
+            url.append("?serviceKey=").append(apiKey);
+            url.append("&numOfRows=").append("1000");
+            url.append("&pageNo=1");
+            url.append("&MobileOS=ETC");
+            url.append("&MobileApp=dolphin");
+            url.append("&listYN=Y");
+            url.append("&arrange=B");
+            url.append("&areaCode=39");
+            url.append("&sigunguCode=4");
 
 
+            DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
+            Document doc = dBuilder.parse(url.toString());
 
+            // 파싱할 tag
+            NodeList nList = doc.getElementsByTagName("item");
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
 
+                Element eElement = (Element) nNode;
 
+                if (getTagValue("addr1", eElement).equals(""))
+                    continue;
 
+                Long id = Long.parseLong(getTagValue("contentid", eElement));
+                Place dbPlace = placeRepository.findById(id).orElse(null);
+                if (null == dbPlace) {
+                    Place place = Place.builder()
+                            .id(Long.parseLong(getTagValue("contentid", eElement)))
+                            .address(getTagValue("addr1", eElement))
+                            .theme(getTagValue("contenttypeid", eElement))
+                            .areaCode(getTagValue("areacode", eElement))
+                            .sigunguCode(getTagValue("sigungucode", eElement))
+                            .title(getTagValue("title", eElement))
+                            .content(getTagValue("content", eElement))
+                            .likes(0)
+                            .star(0)
+                            .mapX(getTagValue("mapx", eElement))
+                            .mapY(getTagValue("mapy", eElement))
+                            .readCount(Long.parseLong(getTagValue("readcount", eElement)))
+                            .build();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//open api에서 데이터 저장
-        @PostConstruct
-        public void savePlace () {
-            List<Place> places = new ArrayList<>();
-            List<PlaceImage> imageList = new ArrayList<>();
-            try {
-                // parsing할 url 지정(API 키 포함해서)
-                StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
-                url.append("?serviceKey=").append(apiKey);
-                url.append("&numOfRows=").append("1000");
-                url.append("&pageNo=1");
-                url.append("&MobileOS=ETC");
-                url.append("&MobileApp=dolphin");
-                url.append("&listYN=Y");
-                url.append("&arrange=B");
-                url.append("&areaCode=39");
-                url.append("&sigunguCode=4");
-
-
-                DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
-                Document doc = dBuilder.parse(url.toString());
-
-                // 파싱할 tag
-                NodeList nList = doc.getElementsByTagName("item");
-                for (int temp = 0; temp < nList.getLength(); temp++) {
-                    Node nNode = nList.item(temp);
-
-                    Element eElement = (Element) nNode;
-
-                    if (getTagValue("addr1", eElement).equals(""))
-                        continue;
-
-                    Long id = Long.parseLong(getTagValue("contentid", eElement));
-                    Place dbPlace = placeRepository.findById(id).orElse(null);
-                    if (null == dbPlace) {
-                        Place place = Place.builder()
-                                .id(Long.parseLong(getTagValue("contentid", eElement)))
-                                .address(getTagValue("addr1", eElement))
-                                .theme(getTagValue("contenttypeid", eElement))
-                                .areaCode(getTagValue("areacode", eElement))
-                                .sigunguCode(getTagValue("sigungucode", eElement))
-                                .title(getTagValue("title", eElement))
-                                .content(getTagValue("content", eElement))
-                                .likes(0)
-                                .star(0)
-                                .mapX(getTagValue("mapx", eElement))
-                                .mapY(getTagValue("mapy", eElement))
-                                .readCount(Long.parseLong(getTagValue("readcount", eElement)))
-                                .build();
-
-                        places.add(place);
-                        String img = getTagValue("firstimage", eElement);
-                        if (!img.equals(""))
-                            imageList.add(PlaceImage.builder()
-                                    .place(place)
-                                    .imageUrl(img)
-                                    .build());
-                    }
+                    places.add(place);
+                    String img = getTagValue("firstimage", eElement);
+                    if (!img.equals(""))
+                        imageList.add(PlaceImage.builder()
+                                .place(place)
+                                .imageUrl(img)
+                                .build());
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
-            placeRepository.saveAll(places);
-            imageRepository.saveAll(imageList);
-            System.out.println("save end");
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-
+        placeRepository.saveAll(places);
+        imageRepository.saveAll(imageList);
+        System.out.println("save end");
     }
 
-
+}
+//
+//
 //    @PostConstruct
-//    public void updatePlace(){
+//    public void updatePlace() {
 //        String[] themes = {"12", "14", "28", "39"};
-//        for (String theme: themes) {
+//        for (String theme : themes) {
 //            int i = 1;
 //            while (savePlace(theme, i))
 //                i++;
@@ -585,7 +561,7 @@ public class PlaceService {
 //        System.out.println("end");
 //    }
 //
-//    public boolean savePlace(String theme, int pageNum){
+//    public boolean savePlace(String theme, int pageNum) {
 //        List<Place> places = new ArrayList<>();
 //        List<PlaceImage> imageList = new ArrayList<>();
 //        // 본인이 받은 api키를 추가
@@ -595,7 +571,7 @@ public class PlaceService {
 //            // parsing할 url 지정(API 키 포함해서)
 //            StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
 //            url.append("?serviceKey=").append(apiKey);
-//            url.append("&numOfRows=").append("7000");
+//            url.append("&numOfRows=").append("5000");
 //            url.append("&pageNo=").append(pageNum);
 //            url.append("&MobileOS=ETC");
 //            url.append("&MobileApp=dolphin");
@@ -610,42 +586,37 @@ public class PlaceService {
 //
 //            // 제일 첫번째 태그
 //            doc.getDocumentElement().normalize();
-//
 //            totalCount = Integer.parseInt(doc.getElementsByTagName("totalCount").item(0).getTextContent());
 //            // 파싱할 tag
 //            NodeList nList = doc.getElementsByTagName("item");
 //            for (int temp = 0; temp < nList.getLength(); temp++) {
 //                Node nNode = nList.item(temp);
-//
 //                Element eElement = (Element) nNode;
-//
 //                if (getTagValue("addr1", eElement).equals(""))
 //                    continue;
-//
 //                Long id = Long.parseLong(getTagValue("contentid", eElement));
-//                Place dbPlace = placeRepository.findById(id).orElse(null);
-//                if (null == dbPlace) {
-//                    StringBuilder url2 = new StringBuilder("http://apis.data.go.kr/B551011/KorService/detailCommon");
-//                    url2.append("?serviceKey=" + apiKey);
-//                    url2.append("&MobileOS=ETC");
-//                    url2.append("&MobileApp=dolphin");
-//                    url2.append("&contentId=").append(id);
-//                    url2.append("&overviewYN=Y");
-//                    url2.append("&contentTypeId=").append(theme);
-//
-//                    try {
-//
-//                        DocumentBuilderFactory dbFactoty2 = DocumentBuilderFactory.newInstance();
-//                        DocumentBuilder dBuilder2 = dbFactoty2.newDocumentBuilder();
-//                        Document doc2 = dBuilder2.parse(url2.toString());
-//
-//                        // 제일 첫번째 태그
-//                        doc2.getDocumentElement().normalize();
-//
-//                        NodeList nList2 = doc2.getElementsByTagName("item");
-//
-//                        Node nNode2 = nList2.item(0);
-//                        Element eElement2 = (Element) nNode2;
+//                if(!placeRepository.existsById(id)){
+////                    StringBuilder url2 = new StringBuilder("http://apis.data.go.kr/B551011/KorService/detailCommon");
+////                    url2.append("?serviceKey=" + apiKey);
+////                    url2.append("&MobileOS=ETC");
+////                    url2.append("&MobileApp=dolphin");
+////                    url2.append("&contentId=").append(id);
+////                    url2.append("&overviewYN=Y");
+////                    url2.append("&contentTypeId=").append(theme);
+////
+////                    try {
+////
+////                        DocumentBuilderFactory dbFactoty2 = DocumentBuilderFactory.newInstance();
+////                        DocumentBuilder dBuilder2 = dbFactoty2.newDocumentBuilder();
+////                        Document doc2 = dBuilder2.parse(url2.toString());
+////
+////                        // 제일 첫번째 태그
+////                        doc2.getDocumentElement().normalize();
+////
+////                        NodeList nList2 = doc2.getElementsByTagName("item");
+////
+////                        Node nNode2 = nList2.item(0);
+////                        Element eElement2 = (Element) nNode2;
 //                        Place place = Place.builder()
 //                                .id(Long.parseLong(getTagValue("contentid", eElement)))
 //                                .address(getTagValue("addr1", eElement))
@@ -663,23 +634,25 @@ public class PlaceService {
 //                                .build();
 //
 //                        places.add(place);
-//                    String img = getTagValue("firstimage",eElement);
-//                    if(!img.equals(""))
-//                        imageList.add(PlaceImage.builder()
-//                                .place(place)
-//                                .imageUrl(img)
-//                                .filename(place.getTitle())
-//                                .build());
+//                        String img = getTagValue("firstimage", eElement);
+//                        if (!img.equals(""))
+//                            imageList.add(PlaceImage.builder()
+//                                    .place(place)
+//                                    .imageUrl(img)
+//                                    .build());
 ////                    } catch (Exception e) {
 ////                        e.printStackTrace();
 ////                    }
+//                    }
 //                }
-//            }
-//        }catch (Exception ex){
+//
+//        } catch (Exception ex) {
 //            ex.printStackTrace();
 //        }
 //        placeRepository.saveAll(places);
 //        imageRepository.saveAll(imageList);
 //        System.out.println("save method end");
-//            return totalCount > pageNum * 7000;
+//        return totalCount > pageNum * 5000;
 //
+//    }
+//}
