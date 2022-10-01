@@ -12,7 +12,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findAllByPlaceId(Long place_id);
 
     // 마이페이지의 내가 쓴 리뷰를 불러올 때
-//    List<Comment> findAllByMemberId(Long member_id);
+    List<Comment> findAllByMemberId(Long member_id);
 
     Optional<Comment> findById(Long comment_id);
 

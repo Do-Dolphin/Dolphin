@@ -40,18 +40,11 @@ public class Comment extends Timestamped {
     @Column(nullable = false)
     private int star;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
 
-    public Comment(CommentRequestDto commentRequestDto, List<CommentImage> imageList) {
-        this.title = commentRequestDto.getTitle();
-        this.content = commentRequestDto.getContent();
-        this.star = commentRequestDto.getStar();
-        this.imageList = imageList;
-    }
 
     public Comment(CommentRequestDto commentRequestDto, Place place, Member member) {
         this.place = place;

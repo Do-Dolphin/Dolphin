@@ -48,7 +48,7 @@ public class AmazonS3Service {
     private String region;
 
 
-    // 이미지 업로드 기능
+    // 이미지 업로드 기능(다중 업로드)
     @Transactional
     public List<String> upload(List<MultipartFile> multipartFiles) throws IOException {
 
@@ -85,6 +85,34 @@ public class AmazonS3Service {
         return imageUrlList;
     }
 
+    // 이미지 업로드 기능(단일 업로드)
+    public String upload(MultipartFile multipartFile) throws IOException {
+
+        if(multipartFile == null) {
+            return null;
+        }
+
+        // 이미지 파일인지 여부 검증
+        isImage(multipartFile);
+
+        String fileFormatName = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
+        String filename = createFilename(fileFormatName);
+
+        MultipartFile resizedFile = resizeImage(filename, fileFormatName, multipartFile, 800);
+
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(resizedFile.getSize());
+        objectMetadata.setContentType(multipartFile.getContentType());
+
+        try (InputStream inputStream = resizedFile.getInputStream()) {
+            amazonS3Client.putObject(new PutObjectRequest(bucket, filename, inputStream, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+        }
+        return amazonS3Client.getUrl(bucket, filename).toString();
+    }
+
 
     // 이미지 삭제 기능
     @Transactional
@@ -100,7 +128,7 @@ public class AmazonS3Service {
     }
 
 
-    // 이미지 파일인지 확인하는 메소드
+    // 이미지 파일인지 확인하는 메소드(다중 업로드)
     private void isImage(List<MultipartFile> multipartFile) throws IOException {
 
         /* tika를 이용해 파일 MIME 타입 체크
@@ -112,6 +140,17 @@ public class AmazonS3Service {
             if (!mimeType.startsWith("image/")) {
                 throw new IllegalStateException("이미지 파일이 아닙니다");
             }
+        }
+    }
+
+    // 이미지 파일인지 확인하는 메소드(단일 업로드)
+    private void isImage(MultipartFile multipartFile) throws IOException {
+
+        Tika tika = new Tika();
+        String mimeType = tika.detect(multipartFile.getInputStream());
+
+        if (!mimeType.startsWith("image/")) {
+            throw new IllegalStateException("이미지 파일이 아닙니다");
         }
     }
 

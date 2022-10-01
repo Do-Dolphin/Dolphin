@@ -1,11 +1,9 @@
 package com.dolphin.demo.controller;
 
-import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.request.ImageRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
-import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 
@@ -64,6 +61,12 @@ public class CommentController {
         commentService.deleteComment(id, userDetails);
 
         return ResponseEntity.ok().body("Delete comment_id : " + id);
+    }
+
+    @GetMapping("/auth/comment/mypage")
+    public ResponseEntity<List<CommentResponseDto>> getMyCommentList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        return commentService.getMyCommentList(userDetails);
     }
 
 }
