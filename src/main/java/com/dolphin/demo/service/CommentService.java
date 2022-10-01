@@ -146,14 +146,7 @@ public class CommentService {
         List<CommentImage> image = commentImageRepository.findAllByCommentId(comment_id);
         comment.getPlace().updateStar(imageRequestDto.getStar()-comment.getStar(),0);
 
-
-        // 수정된 내용 저장
-        CommentRequestDto updateComment = CommentRequestDto.builder()
-                .title(imageRequestDto.getTitle())
-                .content(imageRequestDto.getContent())
-                .star(imageRequestDto.getStar())
-                .build();
-        comment.update(updateComment);
+        comment.update(imageRequestDto);
         commentRepository.save(comment);
 
         // 이미지 수정 및 재등록 기능

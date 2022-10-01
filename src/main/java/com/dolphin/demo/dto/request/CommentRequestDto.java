@@ -13,7 +13,6 @@ import java.util.List;
 
 
 @Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentRequestDto {

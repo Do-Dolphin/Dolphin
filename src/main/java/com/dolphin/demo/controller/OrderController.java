@@ -26,6 +26,7 @@ public class OrderController {
     private final OrderService orderService;
 
     //요청 목록 조회
+    //    @Secured("ADMIN")
     @GetMapping("/order")
     public ResponseEntity<List<OrderListResponseDto>> getOrderList() {
 
@@ -33,13 +34,14 @@ public class OrderController {
     }
 
     //요청 상세 조회
+    //    @Secured("ADMIN")
     @GetMapping("/order/{id}")
     public ResponseEntity<OrderResponseDto> getOrder(@PathVariable Long id) {
 
         return orderService.getOrder(id);
     }
 
-    // 후기 작성
+
     @PostMapping("/order/{id}")
     public ResponseEntity<OrderResponseDto> createOrder(@PathVariable Long id,
                                                             @Valid @RequestPart(value = "data") OrderRequestDto orderRequestDto,
@@ -49,6 +51,7 @@ public class OrderController {
 
         return orderService.createOrder(id, orderRequestDto, multipartFile, userDetails);
     }
+
 
     @PostMapping("/order")
     public ResponseEntity<OrderResponseDto> createAddOrder(
@@ -60,6 +63,7 @@ public class OrderController {
         return orderService.createAddOrder(requestDto, multipartFile, userDetails);
     }
 
+    //    @Secured("ADMIN")
     @PutMapping("/order/{id}")
     public ResponseEntity<Boolean> updateState(@PathVariable Long id){
         return orderService.udateState(id);

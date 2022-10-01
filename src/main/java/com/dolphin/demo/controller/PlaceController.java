@@ -7,6 +7,7 @@ import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +29,7 @@ public class PlaceController {
         return placeService.getPlace(theme, areaCode, sigunguCode, pageNum);
     }
 
-    @GetMapping("/api/auth/place/random")
+    @GetMapping("/api/place/random")
     public ResponseEntity<RandomPlaceResponseDto> randomPlace(){
 
         return placeService.randomPlace();
@@ -49,26 +50,25 @@ public class PlaceController {
         return placeService.getPlaceDetail(id);
     }
 
+//    @Secured("ADMIN")
     @PostMapping("api/auth/place")
-    public ResponseEntity<PlaceResponseDto> createPlace(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                        @RequestPart("data")PlaceRequestDto placeRequestDto,
+    public ResponseEntity<PlaceResponseDto> createPlace(@RequestPart("data")PlaceRequestDto placeRequestDto,
                                                         @RequestPart(value = "image", required = false)List<MultipartFile> multipartFile) throws IOException {
-        return placeService.createPlace(userDetails, placeRequestDto, multipartFile);
+        return placeService.createPlace(placeRequestDto, multipartFile);
     }
 
-
+    //    @Secured("ADMIN")
     @PutMapping("api/auth/place/{id}")
-    public ResponseEntity<PlaceResponseDto> updatePlace(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                        @PathVariable Long id,
+    public ResponseEntity<PlaceResponseDto> updatePlace(@PathVariable Long id,
                                                         @RequestPart("data") PlaceUpdateRequestDto placeRequestDto,
                                                         @RequestPart(value = "image", required = false)List<MultipartFile> multipartFile) throws IOException {
-        return placeService.updatePlace(userDetails, id, placeRequestDto, multipartFile);
+        return placeService.updatePlace(id, placeRequestDto, multipartFile);
     }
 
+    //    @Secured("ADMIN")
     @DeleteMapping("api/auth/place/{id}")
-    public ResponseEntity<String> deletePlace(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                              @PathVariable Long id) {
-        return placeService.deletePlace(id, userDetails);
+    public ResponseEntity<String> deletePlace(@PathVariable Long id) {
+        return placeService.deletePlace(id);
     }
 
     @PostMapping("api/auth/place/like/{id}")

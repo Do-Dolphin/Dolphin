@@ -1,11 +1,9 @@
 package com.dolphin.demo.dto.request;
 
-import lombok.Builder;
 import lombok.Getter;
-
 import java.util.List;
 
-@Builder
+
 @Getter
 public class PlaceUpdateRequestDto {
     private String title;

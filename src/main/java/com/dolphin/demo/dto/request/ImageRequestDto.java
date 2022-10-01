@@ -1,7 +1,5 @@
 package com.dolphin.demo.dto.request;
 
-import com.dolphin.demo.domain.Comment;
-import com.dolphin.demo.domain.Place;
 import com.sun.istack.NotNull;
 import lombok.*;
 
@@ -12,8 +10,6 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Setter
 @Getter
 public class ImageRequestDto {
 
