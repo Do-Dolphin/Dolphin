@@ -55,7 +55,7 @@ public class PlaceService {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
         for (Place place : placeList) {
-            PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+            PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
@@ -134,7 +134,7 @@ public class PlaceService {
 
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
-        PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+        PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
         if (img != null)
             return PlaceListResponseDto.builder()
                     .id(place.getId())
@@ -178,7 +178,7 @@ public class PlaceService {
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
 
-        PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+        PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
         if (img != null)
             return PlaceListResponseDto.builder()
                     .id(place.getId())
@@ -203,7 +203,7 @@ public class PlaceService {
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
         List<Place> placeList = placeRepository.findAllByThemeOrderByReadCountDesc(String.valueOf(theme), pageRequest);
         for (Place place : placeList) {
-            PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+            PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
@@ -458,7 +458,7 @@ public class PlaceService {
 
         for (Heart heart : hearts) {
             Place place = heart.getPlace();
-            PlaceImage img = imageRepository.findByPlaceId(place.getId()).orElse(null);
+            PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
@@ -478,75 +478,76 @@ public class PlaceService {
     }
 
 
-//open api에서 데이터 저장
-        @PostConstruct
-        public void savePlace () {
-            List<Place> places = new ArrayList<>();
-            List<PlaceImage> imageList = new ArrayList<>();
-            try {
-                // parsing할 url 지정(API 키 포함해서)
-                StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
-                url.append("?serviceKey=").append(apiKey);
-                url.append("&numOfRows=").append("1000");
-                url.append("&pageNo=1");
-                url.append("&MobileOS=ETC");
-                url.append("&MobileApp=dolphin");
-                url.append("&listYN=Y");
-                url.append("&arrange=B");
-                url.append("&areaCode=39");
-                url.append("&sigunguCode=4");
+    //open api에서 데이터 저장
+    @Transactional
+    @PostConstruct
+    public void savePlace() {
+        List<Place> places = new ArrayList<>();
+        List<PlaceImage> imageList = new ArrayList<>();
+        try {
+            // parsing할 url 지정(API 키 포함해서)
+            StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
+            url.append("?serviceKey=").append(apiKey);
+            url.append("&numOfRows=").append("1000");
+            url.append("&pageNo=1");
+            url.append("&MobileOS=ETC");
+            url.append("&MobileApp=dolphin");
+            url.append("&listYN=Y");
+            url.append("&arrange=B");
+            url.append("&areaCode=39");
+            url.append("&sigunguCode=4");
 
 
-                DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
-                Document doc = dBuilder.parse(url.toString());
+            DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
+            Document doc = dBuilder.parse(url.toString());
 
-                // 파싱할 tag
-                NodeList nList = doc.getElementsByTagName("item");
-                for (int temp = 0; temp < nList.getLength(); temp++) {
-                    Node nNode = nList.item(temp);
+            // 파싱할 tag
+            NodeList nList = doc.getElementsByTagName("item");
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
 
-                    Element eElement = (Element) nNode;
+                Element eElement = (Element) nNode;
 
-                    if (getTagValue("addr1", eElement).equals(""))
-                        continue;
+                if (getTagValue("addr1", eElement).equals(""))
+                    continue;
 
-                    Long id = Long.parseLong(getTagValue("contentid", eElement));
-                    Place dbPlace = placeRepository.findById(id).orElse(null);
-                    if (null == dbPlace) {
-                        Place place = Place.builder()
-                                .id(Long.parseLong(getTagValue("contentid", eElement)))
-                                .address(getTagValue("addr1", eElement))
-                                .theme(getTagValue("contenttypeid", eElement))
-                                .areaCode(getTagValue("areacode", eElement))
-                                .sigunguCode(getTagValue("sigungucode", eElement))
-                                .title(getTagValue("title", eElement))
-                                .content(getTagValue("content", eElement))
-                                .likes(0)
-                                .star(0)
-                                .mapX(getTagValue("mapx", eElement))
-                                .mapY(getTagValue("mapy", eElement))
-                                .readCount(Long.parseLong(getTagValue("readcount", eElement)))
-                                .build();
+                Long id = Long.parseLong(getTagValue("contentid", eElement));
+                Place dbPlace = placeRepository.findById(id).orElse(null);
+                if (null == dbPlace) {
+                    Place place = Place.builder()
+                            .id(Long.parseLong(getTagValue("contentid", eElement)))
+                            .address(getTagValue("addr1", eElement))
+                            .theme(getTagValue("contenttypeid", eElement))
+                            .areaCode(getTagValue("areacode", eElement))
+                            .sigunguCode(getTagValue("sigungucode", eElement))
+                            .title(getTagValue("title", eElement))
+                            .content(getTagValue("content", eElement))
+                            .likes(0)
+                            .star(0)
+                            .mapX(getTagValue("mapx", eElement))
+                            .mapY(getTagValue("mapy", eElement))
+                            .readCount(Long.parseLong(getTagValue("readcount", eElement)))
+                            .build();
 
-                        places.add(place);
-                        String img = getTagValue("firstimage", eElement);
-                        if (!img.equals(""))
-                            imageList.add(PlaceImage.builder()
-                                    .place(place)
-                                    .imageUrl(img)
-                                    .build());
-                    }
+                    places.add(place);
+                    String img = getTagValue("firstimage", eElement);
+                    if (!img.equals(""))
+                        imageList.add(PlaceImage.builder()
+                                .place(place)
+                                .imageUrl(img)
+                                .build());
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
-            placeRepository.saveAll(places);
-            imageRepository.saveAll(imageList);
-            System.out.println("save end");
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-
+        placeRepository.saveAll(places);
+        imageRepository.saveAll(imageList);
+        System.out.println("save end");
     }
+
+}
 //
 //
 //    @PostConstruct

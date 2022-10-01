@@ -8,9 +8,8 @@ import java.util.Optional;
 
 
 public interface PlaceImageRepository extends JpaRepository<PlaceImage, Long> {
-
     List<PlaceImage> findAllByPlace(Place place);
-    Optional<PlaceImage> findByPlaceId(Long place_id);
+    Optional<PlaceImage> findFirstByPlace(Place Place);
 
 
 }
