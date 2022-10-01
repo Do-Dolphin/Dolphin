@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -32,7 +30,6 @@ public class EventService {
 
         Event event = Event.builder()
                 .title(eventRequestDto.getTitle())
-                .areaCode(eventRequestDto.getAreaCode())
                 .linkUrl(eventRequestDto.getLinkUrl())
                 .period(eventRequestDto.getPeriod())
                 .imageUrl(imageUrl)
@@ -42,7 +39,6 @@ public class EventService {
         return ResponseEntity.ok().body(EventResponseDto.builder()
                 .id(event.getId())
                 .title(event.getTitle())
-                .areaCode(event.getAreaCode())
                 .linkUrl(event.getLinkUrl())
                 .period(event.getPeriod())
                 .imageUrl(event.getImageUrl())
@@ -63,7 +59,6 @@ public class EventService {
             return ResponseEntity.ok().body(EventResponseDto.builder()
                     .id(event.getId())
                     .title(eventRequestDto.getTitle())
-                    .areaCode(eventRequestDto.getAreaCode())
                     .linkUrl(eventRequestDto.getLinkUrl())
                     .period(eventRequestDto.getPeriod())
                     .imageUrl(event.getImageUrl())
@@ -77,7 +72,6 @@ public class EventService {
         // 수정된 내용 저장
         EventRequestDto updateEvent = EventRequestDto.builder()
                 .title(eventRequestDto.getTitle())
-                .areaCode(eventRequestDto.getAreaCode())
                 .linkUrl(eventRequestDto.getLinkUrl())
                 .period(eventRequestDto.getPeriod())
                 .imageUrl(imageUrl)
@@ -88,7 +82,6 @@ public class EventService {
         return ResponseEntity.ok().body(EventResponseDto.builder()
                 .id(event.getId())
                 .title(event.getTitle())
-                .areaCode(event.getAreaCode())
                 .linkUrl(event.getLinkUrl())
                 .period(event.getPeriod())
                 .imageUrl(event.getImageUrl())

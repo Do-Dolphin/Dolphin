@@ -11,11 +11,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class EventRequestDto {
 
     private String title;
-    private String areaCode;
     private String linkUrl;
     private String imageUrl;
-
-    @DateTimeFormat(pattern = "yyyy-mm-dd")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-mm-dd", timezone = "Asia/Seoul")
     private String period;
+
 }

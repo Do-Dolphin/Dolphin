@@ -19,23 +19,14 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
-    private String areaCode;
     private String linkUrl;
     private String imageUrl;
     private String period;
 
 
-    public void event(EventRequestDto eventRequestDto) {
-        this.title = eventRequestDto.getTitle();
-        this.areaCode = eventRequestDto.getAreaCode();
-        this.linkUrl = eventRequestDto.getLinkUrl();
-        this.imageUrl = eventRequestDto.getImageUrl();
-        this.period = eventRequestDto.getPeriod();
-    }
 
     public void update(EventRequestDto eventRequestDto) {
         this.title = eventRequestDto.getTitle();
-        this.areaCode = eventRequestDto.getAreaCode();
         this.linkUrl = eventRequestDto.getLinkUrl();
         this.imageUrl = eventRequestDto.getImageUrl();
         this.period = eventRequestDto.getPeriod();
