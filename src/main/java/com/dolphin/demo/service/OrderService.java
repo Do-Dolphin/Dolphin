@@ -13,7 +13,6 @@ import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.OrderImageRepository;
 import com.dolphin.demo.repository.OrderRepository;
 import com.dolphin.demo.repository.MemberRepository;
-import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,7 +197,7 @@ public class OrderService {
 
 
 
-    @Scheduled(cron = "0 0 18 * * 5")
+    @Scheduled(cron = "0 0 0 1 * ?")
     public void deleteOrder(){
         logger.info(new Date() + " 스케쥴러 실행");
         List<Order> orders = orderRepository.findAllByStateTrue();
