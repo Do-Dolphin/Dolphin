@@ -69,7 +69,6 @@ public class MemberService {
         );
 
         String[] token = refreshToken.split(" ");
-        System.out.println(token[1]);
         redisService.deleteValues(token[1]);
 
         return new ResponseEntity<>("로그아웃되었습니다.", HttpStatus.OK);
@@ -77,7 +76,6 @@ public class MemberService {
 
     @Transactional
     public ResponseEntity<String> login(LoginRequestDto requestDto) {
-        System.out.println(requestDto.getUsername());
         Member member = memberRepository.findByUsername(requestDto.getUsername()).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
         );

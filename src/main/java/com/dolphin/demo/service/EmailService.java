@@ -75,15 +75,15 @@ public class EmailService {
         redisService.setValuesExpire(authKey, email, 60*5L);
     }
 
-    public ResponseEntity<String> authEmailCode(String code) {
+    public ResponseEntity<Boolean> authEmailCode(String code) {
         // 입력 받은 code(key)를 이용해 email(value)을 꺼낸다.
         String email = redisService.getValues(code);
 
         // email이 존재하지 않으면, 유효 기간 만료이거나 코드 잘못 입력
         if (email == null) {
-            return new ResponseEntity<>("코드가 잘못입력되었거나 유효기간이 만료되었습니다",HttpStatus.OK);
+            return new ResponseEntity<>(false,HttpStatus.OK);
         }
 
-        return new ResponseEntity<>("인증되었습니다.", HttpStatus.OK);
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 }
