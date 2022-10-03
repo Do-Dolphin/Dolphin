@@ -48,7 +48,7 @@ public class MemberController {
     }
 
     //비밀번호 변경
-    @PutMapping("/api/auth/member/updatePassword")
+    @PutMapping("/api/auth/member/updatepassword")
     public ResponseEntity<String> updatePassword(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                             @RequestBody NicknameDto nicknameDto) {
         return memberService.updatePassword(userDetails.getMember(), nicknameDto);
