@@ -64,6 +64,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // 회원 관리 처리 API 전부를 login 없이 허용
                 .antMatchers("/api/member/*").permitAll()
+                .antMatchers("/api/kakao/*").permitAll()
                 .antMatchers("/api/comment/**").permitAll()
                 .antMatchers("/api/place/**").permitAll()
                 .anyRequest().authenticated()

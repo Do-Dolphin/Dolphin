@@ -24,7 +24,7 @@ public class EmailController {
 
     // 인증코드 검사
     @PostMapping("/api/member/codeEmail")
-    public ResponseEntity<String> authCodeEmail(@RequestBody AuthEmailRequestDto requestDto){
+    public ResponseEntity<Boolean> authCodeEmail(@RequestBody AuthEmailRequestDto requestDto){
         return emailService.authEmailCode(requestDto.getCode());
     }
 

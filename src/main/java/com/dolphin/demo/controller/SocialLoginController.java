@@ -20,6 +20,6 @@ public class SocialLoginController {
         return kakaoLogin.kakaoLogin(code);
     }
 
-    //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=233f3697fb15f1850ac032d88db3348f&redirect_uri=http://localhost:8080/kakaoloading/
+    //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=1af8a4039402102e8193e16de2a1b4fb&redirect_uri=http://localhost:3000/oauth/callback/kakao
 
 }

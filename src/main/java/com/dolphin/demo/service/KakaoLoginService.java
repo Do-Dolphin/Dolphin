@@ -1,6 +1,7 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.Member;
+import com.dolphin.demo.domain.MemberRoleEnum;
 import com.dolphin.demo.dto.request.KakaoUserInfoDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.MemberRepository;
@@ -137,6 +138,7 @@ public class KakaoLoginService {
                     .username(email)
                     .password(encodedPassword)
                     .nickname(nickname)
+                    .role(MemberRoleEnum.MEMBER)
                     .build();
             memberRepository.save(kakaoMember);
 
