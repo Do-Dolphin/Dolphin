@@ -139,7 +139,7 @@ public class ApiService {
                 NodeList nList = doc.getElementsByTagName("item");
                 for (int i = 0; i < nList.getLength(); i++) {
 
-                    Node nNode = nList.item(0);
+                    Node nNode = nList.item(i);
                     Element eElement = (Element) nNode;
 
                     String imgUrl = getTagValue("originimgurl", eElement);
