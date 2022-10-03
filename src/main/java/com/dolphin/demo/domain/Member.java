@@ -3,6 +3,7 @@ package com.dolphin.demo.domain;
 import com.dolphin.demo.dto.request.NicknameDto;
 
 import lombok.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
 
@@ -35,8 +36,8 @@ public class Member {
         this.nickname = nicknameDto.getNickname();
     }
 
-    public void updatePassword(NicknameDto nicknameDto){
-        this.password = nicknameDto.getPassword();
+    public void updatePassword(String newPassword){
+        this.password = newPassword;
     }
 
 }

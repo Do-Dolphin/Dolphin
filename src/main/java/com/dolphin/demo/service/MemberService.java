@@ -199,7 +199,7 @@ public class MemberService {
             return new ResponseEntity<>("새로운 비번이 동일하지 않습니다.",HttpStatus.OK);
         }
 
-        member.updatePassword(nicknameDto);
+        member.updatePassword(passwordEncoder.encode(nicknameDto.getNewPassword()));
 
 
         return new ResponseEntity<>("비밀번호가 변경되었습니다",HttpStatus.OK);
