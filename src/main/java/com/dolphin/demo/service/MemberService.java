@@ -60,7 +60,7 @@ public class MemberService {
                 .build();
         memberRepository.save(member);
 
-        return new ResponseEntity<>(member.getNickname()+"님 회원가입을 환영합니다.", HttpStatus.OK);
+        return new ResponseEntity<>(member.getNickname()+"님 회원가입을 환영합니다."+System.lineSeparator()+member.getUsername(), HttpStatus.OK);
     }
 
     public ResponseEntity<String> logout(Long memberId, String refreshToken) {
@@ -87,7 +87,7 @@ public class MemberService {
         //토큰 만들기
         tokensProcess(member.getUsername());
 
-        return new ResponseEntity<>(member.getNickname()+"님 방문을 환영합니다.",HttpStatus.OK);
+        return new ResponseEntity<>(member.getNickname()+"님 방문을 환영합니다."+System.lineSeparator()+member.getUsername(),HttpStatus.OK);
     }
 
     public void tokensProcess(String username) {
