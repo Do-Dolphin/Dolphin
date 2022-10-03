@@ -60,7 +60,7 @@ public class MemberService {
                 .build();
         memberRepository.save(member);
 
-        return new ResponseEntity<>(member.getNickname()+"님 회원가입을 환영합니다."+System.lineSeparator()+member.getUsername(), HttpStatus.OK);
+        return new ResponseEntity<>("nickname : "+member.getNickname()+System.lineSeparator()+"username : "+member.getUsername(), HttpStatus.OK);
     }
 
     public ResponseEntity<String> logout(Long memberId, String refreshToken) {
@@ -87,7 +87,7 @@ public class MemberService {
         //토큰 만들기
         tokensProcess(member.getUsername());
 
-        return new ResponseEntity<>(member.getNickname()+"님 방문을 환영합니다."+System.lineSeparator()+member.getUsername(),HttpStatus.OK);
+        return new ResponseEntity<>("nickname : "+member.getNickname()+System.lineSeparator()+"username : "+member.getUsername(),HttpStatus.OK);
     }
 
     public void tokensProcess(String username) {
@@ -156,7 +156,7 @@ public class MemberService {
                 "표범", "사슴", "숫사슴", "강아지", "고래", "돌고래", "고뤠", "오리", "거위", "닭", "병아리", "짹짹이", "하마", "기린", "용씨", "냥아치", "늑대", "여우", "황소",
                 "매", "양", "염소", "나무", "바람", "말", "태양", "씨앗", "풀잎", "개발자", "고먐미", "클로버", "주작", "현무", "거북이", "펭귄", "북금곰", "수달", "꺼부기", "전기쥐",
                 "햄스터", "랍스터", "타조", "공작새", "비둘기", "뱁새", "제비", "까치", "꿩", "송골매", "폭탄광", "스파이", "마피아", "반장", "요리사", "탐험가", "비버", "도마뱀","앵무새",
-                "쿼카", "친칠라", "해파리", "고구마", "감자", "이삭", "빵순이", "오소리", "완두콩", "지렁이", "삽살개", "수학자", "과학자", "선생님", "변호사" );
+                "쿼카", "친칠라", "해파리", "고구마", "감자", "이삭", "빵순이", "오소리", "완두콩", "지렁이", "삽살개", "수학자", "과학자", "선생", "변호사" );
 
 
         Collections.shuffle(location);
@@ -173,7 +173,7 @@ public class MemberService {
         );
         member.updateNickname(nicknameDto);
 
-        return new ResponseEntity<>("닉네임이 "+member.getNickname()+"로 변경되었습니다.",HttpStatus.OK);
+        return new ResponseEntity<>("nickname : "+member.getNickname()+System.lineSeparator()+"username : "+member.getUsername(),HttpStatus.OK);
     }
 
     //비밀번호 변경
@@ -191,7 +191,7 @@ public class MemberService {
 
         member.updatePassword(nicknameDto);
 
-        return new ResponseEntity<>("패스워드가 성공적으로 변경되었습니다.",HttpStatus.OK);
+        return new ResponseEntity<>("nickname : "+member.getNickname()+System.lineSeparator()+"username : "+member.getUsername(),HttpStatus.OK);
     }
 }
 

@@ -21,7 +21,5 @@ public class SignupRequestDto {
             message = "비밀번호 확인은 영문,숫자 포함 8~20자리여야 합니다")
     private String passwordConfirm;
 
-    private String nickname;
-
 
 }

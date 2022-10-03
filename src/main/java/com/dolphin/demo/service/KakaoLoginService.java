@@ -55,7 +55,7 @@ public class KakaoLoginService {
         //  5. response Header에 JWT 토큰 추가
         memberService.tokensProcess(kakaoMember.getUsername());
 
-        return new ResponseEntity<>(kakaoMember.getNickname()+"님 방문을 환영합니다."+System.lineSeparator()+kakaoMember.getUsername(), HttpStatus.OK);
+        return new ResponseEntity<>("nickname : "+kakaoMember.getNickname()+System.lineSeparator()+"username : "+kakaoMember.getUsername(), HttpStatus.OK);
     }
 
     //header 에 Content-type 지정
