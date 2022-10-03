@@ -67,6 +67,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/kakao/**").permitAll()
                 .antMatchers("/api/comment/**").permitAll()
                 .antMatchers("/api/place/**").permitAll()
+                .antMatchers("/api/events").permitAll()
                 .anyRequest().authenticated()
                 // 그 외 어떤 요청이든 '인증'
                 .and()

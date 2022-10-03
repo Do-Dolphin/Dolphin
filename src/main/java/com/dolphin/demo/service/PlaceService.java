@@ -24,14 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.annotation.PostConstruct;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +37,6 @@ public class PlaceService {
     private final AmazonS3Service amazonS3Service;
     private final MemberRepository memberRepository;
     private final HeartRepository heartRepository;
-    @Value("${restAPI.key}")
-    String apiKey;
 
     //지역, 테마에 해당하는 place 리스트 반환(페이지)
     public ResponseEntity<List<PlaceListResponseDto>> getPlace(String theme, String areaCode, String sigunguCode, String pageNum) {
@@ -114,18 +104,6 @@ public class PlaceService {
                 .build());
     }
 
-    //태그에 해당하는 값 추출
-    public String getTagValue(String tag, Element eElement) {
-
-        //결과를 저장할 result 변수 선언
-        String result = "";
-
-        NodeList nlList = eElement.getElementsByTagName(tag);
-        if (null != nlList.item(0) && nlList.item(0).getChildNodes().item(0) != null)
-            result = nlList.item(0).getChildNodes().item(0).getTextContent();
-
-        return result;
-    }
 
     // 광역시, 특별시에 해당하는 지역에서 해당하는 테마의 관광지 랜덤 추첨
     public PlaceListResponseDto randomArea(String areaCode, String theme) {
@@ -252,10 +230,25 @@ public class PlaceService {
 
     }
 
+    @Transactional
+    public void updateContent(Long id, String content) {
+        Place place = placeRepository.findById(id).orElse(null);
+        if(place == null)
+            throw new CustomException(ErrorCode.Not_Found_Place);
+        place.updateContent(content);
+    }
+
+
+    @Transactional
+    public void updateState(Long id, boolean state) {
+        PlaceImage placeImage = imageRepository.findById(id).orElse(null);
+        placeImage.updateState(state);
+    }
+
     //장소 생성
     @Transactional
     public ResponseEntity<PlaceResponseDto> createPlace(PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
-        Long id = placeRepository.getTopByOrderByIdDesc().getId();
+        Long id = placeRepository.findTopByOrderByIdDesc().getId();
         if (id < 5000000)
             id = 4999999L;
         Place place = Place.builder()
@@ -466,182 +459,4 @@ public class PlaceService {
 
     }
 
-
-    //open api에서 데이터 저장
-    @Transactional
-    @PostConstruct
-    public void savePlace() {
-        List<Place> places = new ArrayList<>();
-        List<PlaceImage> imageList = new ArrayList<>();
-        try {
-            // parsing할 url 지정(API 키 포함해서)
-            StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
-            url.append("?serviceKey=").append(apiKey);
-            url.append("&numOfRows=").append("1000");
-            url.append("&pageNo=1");
-            url.append("&MobileOS=ETC");
-            url.append("&MobileApp=dolphin");
-            url.append("&listYN=Y");
-            url.append("&arrange=B");
-            url.append("&areaCode=39");
-            url.append("&sigunguCode=4");
-
-
-            DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
-            Document doc = dBuilder.parse(url.toString());
-
-            // 파싱할 tag
-            NodeList nList = doc.getElementsByTagName("item");
-            for (int temp = 0; temp < nList.getLength(); temp++) {
-                Node nNode = nList.item(temp);
-
-                Element eElement = (Element) nNode;
-
-                if (getTagValue("addr1", eElement).equals(""))
-                    continue;
-
-                Long id = Long.parseLong(getTagValue("contentid", eElement));
-                Place dbPlace = placeRepository.findById(id).orElse(null);
-                if (null == dbPlace) {
-                    Place place = Place.builder()
-                            .id(Long.parseLong(getTagValue("contentid", eElement)))
-                            .address(getTagValue("addr1", eElement))
-                            .theme(getTagValue("contenttypeid", eElement))
-                            .areaCode(getTagValue("areacode", eElement))
-                            .sigunguCode(getTagValue("sigungucode", eElement))
-                            .title(getTagValue("title", eElement))
-                            .content(getTagValue("content", eElement))
-                            .likes(0)
-                            .star(0)
-                            .mapX(getTagValue("mapx", eElement))
-                            .mapY(getTagValue("mapy", eElement))
-                            .readCount(Long.parseLong(getTagValue("readcount", eElement)))
-                            .build();
-
-                    places.add(place);
-                    String img = getTagValue("firstimage", eElement);
-                    if (!img.equals(""))
-                        imageList.add(PlaceImage.builder()
-                                .place(place)
-                                .imageUrl(img)
-                                .build());
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        placeRepository.saveAll(places);
-        imageRepository.saveAll(imageList);
-        System.out.println("save end");
-    }
-
 }
-//
-//
-//    @PostConstruct
-//    public void updatePlace() {
-//        String[] themes = {"12", "14", "28", "39"};
-//        for (String theme : themes) {
-//            int i = 1;
-//            while (savePlace(theme, i))
-//                i++;
-//        }
-//        System.out.println("end");
-//    }
-//
-//    public boolean savePlace(String theme, int pageNum) {
-//        List<Place> places = new ArrayList<>();
-//        List<PlaceImage> imageList = new ArrayList<>();
-//        // 본인이 받은 api키를 추가
-//        String key = "";
-//        int totalCount = 0;
-//        try {
-//            // parsing할 url 지정(API 키 포함해서)
-//            StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/areaBasedList");
-//            url.append("?serviceKey=").append(apiKey);
-//            url.append("&numOfRows=").append("5000");
-//            url.append("&pageNo=").append(pageNum);
-//            url.append("&MobileOS=ETC");
-//            url.append("&MobileApp=dolphin");
-//            url.append("&listYN=Y");
-//            url.append("&arrange=B");
-//            url.append("&contentTypeId=").append(theme);
-//
-//
-//            DocumentBuilderFactory dbFactoty = DocumentBuilderFactory.newInstance();
-//            DocumentBuilder dBuilder = dbFactoty.newDocumentBuilder();
-//            Document doc = dBuilder.parse(url.toString());
-//
-//            // 제일 첫번째 태그
-//            doc.getDocumentElement().normalize();
-//            totalCount = Integer.parseInt(doc.getElementsByTagName("totalCount").item(0).getTextContent());
-//            // 파싱할 tag
-//            NodeList nList = doc.getElementsByTagName("item");
-//            for (int temp = 0; temp < nList.getLength(); temp++) {
-//                Node nNode = nList.item(temp);
-//                Element eElement = (Element) nNode;
-//                if (getTagValue("addr1", eElement).equals(""))
-//                    continue;
-//                Long id = Long.parseLong(getTagValue("contentid", eElement));
-//                if(!placeRepository.existsById(id)){
-////                    StringBuilder url2 = new StringBuilder("http://apis.data.go.kr/B551011/KorService/detailCommon");
-////                    url2.append("?serviceKey=" + apiKey);
-////                    url2.append("&MobileOS=ETC");
-////                    url2.append("&MobileApp=dolphin");
-////                    url2.append("&contentId=").append(id);
-////                    url2.append("&overviewYN=Y");
-////                    url2.append("&contentTypeId=").append(theme);
-////
-////                    try {
-////
-////                        DocumentBuilderFactory dbFactoty2 = DocumentBuilderFactory.newInstance();
-////                        DocumentBuilder dBuilder2 = dbFactoty2.newDocumentBuilder();
-////                        Document doc2 = dBuilder2.parse(url2.toString());
-////
-////                        // 제일 첫번째 태그
-////                        doc2.getDocumentElement().normalize();
-////
-////                        NodeList nList2 = doc2.getElementsByTagName("item");
-////
-////                        Node nNode2 = nList2.item(0);
-////                        Element eElement2 = (Element) nNode2;
-//                        Place place = Place.builder()
-//                                .id(Long.parseLong(getTagValue("contentid", eElement)))
-//                                .address(getTagValue("addr1", eElement))
-//                                .theme(getTagValue("contenttypeid", eElement))
-//                                .areaCode(getTagValue("areacode", eElement))
-//                                .sigunguCode(getTagValue("sigungucode", eElement))
-//                                .title(getTagValue("title", eElement))
-//                                .content(getTagValue("content", eElement))
-//                                .likes(0)
-//                                .star(0)
-//                                .mapX(getTagValue("mapx", eElement))
-//                                .mapY(getTagValue("mapy", eElement))
-////                                .content(getTagValue("overview",eElement2))
-//                                .readCount(Long.parseLong(getTagValue("readcount", eElement)))
-//                                .build();
-//
-//                        places.add(place);
-//                        String img = getTagValue("firstimage", eElement);
-//                        if (!img.equals(""))
-//                            imageList.add(PlaceImage.builder()
-//                                    .place(place)
-//                                    .imageUrl(img)
-//                                    .build());
-////                    } catch (Exception e) {
-////                        e.printStackTrace();
-////                    }
-//                    }
-//                }
-//
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//        placeRepository.saveAll(places);
-//        imageRepository.saveAll(imageList);
-//        System.out.println("save method end");
-//        return totalCount > pageNum * 5000;
-//
-//    }
-//}
