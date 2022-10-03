@@ -41,7 +41,7 @@ public class MemberController {
     }
 
     //닉네임 변경
-    @PutMapping("/api/member/updatenickname")
+    @PutMapping("/api/auth/member/updatenickname")
     public ResponseEntity<MemberResponseDto> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                  @RequestBody NicknameDto nicknameDto) {
         return memberService.updateNickname(userDetails.getMember(), nicknameDto);
