@@ -5,6 +5,7 @@ import com.dolphin.demo.domain.MemberRoleEnum;
 import com.dolphin.demo.dto.request.LoginRequestDto;
 import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
+import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.jwt.JwtTokenProvider;
 import com.dolphin.demo.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public ResponseEntity<String> signup(SignupRequestDto requestDto) {
+    public ResponseEntity<MemberResponseDto> signup(SignupRequestDto requestDto) {
         System.out.println(requestDto.getUsername());
         if (!requestDto.getPassword().equals(requestDto.getPasswordConfirm())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
@@ -60,7 +61,10 @@ public class MemberService {
                 .build();
         memberRepository.save(member);
 
-        return new ResponseEntity<>("nickname : "+member.getNickname()+System.lineSeparator()+"username : "+member.getUsername(), HttpStatus.OK);
+        return new ResponseEntity<>(MemberResponseDto.builder()
+                .username(member.getUsername())
+                .nickname(member.getNickname())
+                .build(),HttpStatus.OK);
     }
 
     public ResponseEntity<String> logout(Long memberId, String refreshToken) {
@@ -75,7 +79,7 @@ public class MemberService {
     }
 
     @Transactional
-    public ResponseEntity<String> login(LoginRequestDto requestDto) {
+    public ResponseEntity<MemberResponseDto> login(LoginRequestDto requestDto) {
         Member member = memberRepository.findByUsername(requestDto.getUsername()).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
         );
@@ -87,7 +91,10 @@ public class MemberService {
         //토큰 만들기
         tokensProcess(member.getUsername());
 
-        return new ResponseEntity<>("nickname : "+member.getNickname()+System.lineSeparator()+"username : "+member.getUsername(),HttpStatus.OK);
+        return new ResponseEntity<>(MemberResponseDto.builder()
+                .username(member.getUsername())
+                .nickname(member.getNickname())
+                .build(),HttpStatus.OK);
     }
 
     public void tokensProcess(String username) {
@@ -167,13 +174,16 @@ public class MemberService {
 
     //닉네임 변경
     @Transactional
-    public ResponseEntity<String> updateNickname(Member memberinfo, NicknameDto nicknameDto) {
+    public ResponseEntity<MemberResponseDto> updateNickname(Member memberinfo, NicknameDto nicknameDto) {
         Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
                 () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
         );
         member.updateNickname(nicknameDto);
 
-        return new ResponseEntity<>("nickname : "+member.getNickname()+System.lineSeparator()+"username : "+member.getUsername(),HttpStatus.OK);
+        return new ResponseEntity<>(MemberResponseDto.builder()
+                .username(member.getUsername())
+                .nickname(member.getNickname())
+                .build(),HttpStatus.OK);
     }
 
     //비밀번호 변경
@@ -191,7 +201,8 @@ public class MemberService {
 
         member.updatePassword(nicknameDto);
 
-        return new ResponseEntity<>("nickname : "+member.getNickname()+System.lineSeparator()+"username : "+member.getUsername(),HttpStatus.OK);
+
+        return new ResponseEntity<>("비밀번호가 변경되었습니다",HttpStatus.OK);
     }
 }
 

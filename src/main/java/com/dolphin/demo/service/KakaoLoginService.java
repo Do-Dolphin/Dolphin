@@ -3,6 +3,7 @@ package com.dolphin.demo.service;
 import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.MemberRoleEnum;
 import com.dolphin.demo.dto.request.KakaoUserInfoDto;
+import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.MemberRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,7 +40,7 @@ public class KakaoLoginService {
     private final MemberService memberService;
 
     @Transactional
-    public ResponseEntity<String> kakaoLogin(String code) throws JsonProcessingException {
+    public ResponseEntity<MemberResponseDto> kakaoLogin(String code) throws JsonProcessingException {
         // 1. "인가코드" 로 "액세스 토큰" 요청
         String accessToken = getAccessToken(code);
 
@@ -55,7 +56,10 @@ public class KakaoLoginService {
         //  5. response Header에 JWT 토큰 추가
         memberService.tokensProcess(kakaoMember.getUsername());
 
-        return new ResponseEntity<>("nickname : "+kakaoMember.getNickname()+System.lineSeparator()+"username : "+kakaoMember.getUsername(), HttpStatus.OK);
+        return new ResponseEntity<>(MemberResponseDto.builder()
+                .username(kakaoMember.getUsername())
+                .nickname(kakaoMember.getNickname())
+                .build(),HttpStatus.OK);
     }
 
     //header 에 Content-type 지정

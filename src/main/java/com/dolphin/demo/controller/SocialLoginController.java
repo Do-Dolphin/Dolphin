@@ -1,5 +1,6 @@
 package com.dolphin.demo.controller;
 
+import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.service.KakaoLoginService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class SocialLoginController {
     private final KakaoLoginService kakaoLogin;
 
     @GetMapping("/api/kakao/login")
-    public ResponseEntity<String> kakaoLogin(
+    public ResponseEntity<MemberResponseDto> kakaoLogin(
             @RequestParam(value = "code") String code) throws JsonProcessingException {
         return kakaoLogin.kakaoLogin(code);
     }

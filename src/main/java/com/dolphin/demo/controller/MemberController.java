@@ -4,6 +4,7 @@ import com.dolphin.demo.domain.MemberRoleEnum;
 import com.dolphin.demo.dto.request.LoginRequestDto;
 import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
+import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -22,13 +23,13 @@ public class MemberController {
     
     //회원가입
     @PostMapping("/api/member/signup")
-    public ResponseEntity<String> signup(@Valid @RequestBody SignupRequestDto requestDto) {
+    public ResponseEntity<MemberResponseDto> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         return memberService.signup(requestDto);
     }
 
     //로그인
     @PostMapping("/api/member/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDto requestDto) {
+    public ResponseEntity<MemberResponseDto> login(@RequestBody LoginRequestDto requestDto) {
         return memberService.login(requestDto);
     }
 
@@ -41,7 +42,7 @@ public class MemberController {
 
     //닉네임 변경
     @PutMapping("/api/member/updatenickname")
-    public ResponseEntity<String> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<MemberResponseDto> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                  @RequestBody NicknameDto nicknameDto) {
         return memberService.updateNickname(userDetails.getMember(), nicknameDto);
     }
@@ -49,7 +50,7 @@ public class MemberController {
     //비밀번호 변경
     @PutMapping("/api/auth/member/updatePassword")
     public ResponseEntity<String> updatePassword(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                 @RequestBody NicknameDto nicknameDto) {
+                                                            @RequestBody NicknameDto nicknameDto) {
         return memberService.updatePassword(userDetails.getMember(), nicknameDto);
     }
 
