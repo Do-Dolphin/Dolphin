@@ -240,8 +240,9 @@ public class PlaceService {
 
 
     @Transactional
-    public void updateState(PlaceImage placeImage) {
-        placeImage.updateState(true);
+    public void updateState(Long id, boolean state) {
+        PlaceImage placeImage = imageRepository.findById(id).orElse(null);
+        placeImage.updateState(state);
     }
 
     //장소 생성

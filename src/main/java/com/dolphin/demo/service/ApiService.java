@@ -121,7 +121,7 @@ public class ApiService {
         List<PlaceImage> images = imageRepository.findAllByStateFalse(PageRequest.of(1, 100));
         List<PlaceImage> imageList = new ArrayList<>();
         for (PlaceImage placeImage : images) {
-           placeService.updateState(placeImage);
+           placeService.updateState(placeImage.getId(), true);
             Place place = placeImage.getPlace();
             StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/detailImage");
             url.append("?serviceKey=" + key);
