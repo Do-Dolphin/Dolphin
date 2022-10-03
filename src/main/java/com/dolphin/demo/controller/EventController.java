@@ -24,7 +24,7 @@ public class EventController {
 
 
     // 등록된 축제 리스트 조회하기
-    @GetMapping("/api/auth/events")
+    @GetMapping("/api/events")
     public ResponseEntity getEvents() {
 
         List<Event> events = eventRepository.findAll();
