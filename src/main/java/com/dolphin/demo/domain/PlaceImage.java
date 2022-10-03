@@ -10,7 +10,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Getter
 @Entity
-public class PlaceImage extends Timestamped {
+public class PlaceImage {
 
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,12 +18,18 @@ public class PlaceImage extends Timestamped {
     @Id
     private Long id;
 
+    @Column(nullable = false)
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
     private Place place;
 
+    @Column(nullable = false)
+    private boolean state;
 
 
+    public void updateState(boolean state){
+        this.state = state;
+    }
 }

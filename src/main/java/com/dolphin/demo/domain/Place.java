@@ -103,4 +103,8 @@ public class Place {
   public void udateLikes(int likes){
     this.likes = likes;
   }
+
+  public void updateContent(String content){
+    this.content = content;
+  }
 }
