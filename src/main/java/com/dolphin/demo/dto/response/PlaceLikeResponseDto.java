@@ -5,11 +5,13 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class PlaceListResponseDto {
+public class PlaceLikeResponseDto {
     private Long id;
     private String title;
     private float star;
     private String image;
-    private String theme;
     private boolean state;
+    private String theme;
+    private String mapX;
+    private String mapY;
 }
