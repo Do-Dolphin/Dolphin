@@ -3,6 +3,8 @@ package com.dolphin.demo.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -20,7 +22,7 @@ public class CommentRequestDto {
     @NotBlank(message = "리뷰는 10자 이상 300자 미만으로 작성해주세요.")
     private String content;
 
-    @NotBlank
+    @Min(value = 1)
     private int star;
 
 }
