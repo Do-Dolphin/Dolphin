@@ -1,15 +1,10 @@
 package com.dolphin.demo.dto.request;
 
-import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.aspectj.bridge.IMessage;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.util.List;
 
 
 @Getter
@@ -25,7 +20,7 @@ public class CommentRequestDto {
     @NotBlank(message = "리뷰는 10자 이상 300자 미만으로 작성해주세요.")
     private String content;
 
-    @NotNull
+    @NotBlank
     private int star;
 
 }
