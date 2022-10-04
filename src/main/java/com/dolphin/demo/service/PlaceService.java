@@ -18,7 +18,6 @@ import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.PlaceImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -148,7 +147,7 @@ public class PlaceService {
     public String getArea(PlaceListResponseDto responseDto, int n) {
         Place place = placeRepository.findById(responseDto.getId()).orElse(null);
         StringBuilder s = new StringBuilder();
-        s.append(place.getAddress().split(" ")[0]);
+        s.append(place.getAddress().split( "특별시|특별자치도|특별자치시|광역시| ")[0]);
         for (int i = 1; i <= n; i++) {
             s.append(" ");
             s.append(place.getAddress().split(" ")[n]);
