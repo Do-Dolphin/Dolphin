@@ -42,8 +42,16 @@ public class PlaceService {
     public ResponseEntity<List<PlaceListResponseDto>> getPlace(String theme, String areaCode, String sigunguCode, String pageNum) {
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNum), 10);
+        List<Place> placeList;
+        if(sigunguCode.equals("")) {
+            if (areaCode.equals(""))
+                placeList = placeRepository.findAllByTheme(theme,pageRequest);
+            else
+                placeList = placeRepository.findAllByAreaCodeAndTheme(areaCode,theme,pageRequest);
+        }
+        else
+            placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
 
-        List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
         for (Place place : placeList) {
             PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
