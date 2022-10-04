@@ -6,10 +6,7 @@ import com.dolphin.demo.domain.PlaceImage;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.PlaceRequestDto;
 import com.dolphin.demo.dto.request.PlaceUpdateRequestDto;
-import com.dolphin.demo.dto.response.HeartResponseDto;
-import com.dolphin.demo.dto.response.PlaceListResponseDto;
-import com.dolphin.demo.dto.response.PlaceResponseDto;
-import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
+import com.dolphin.demo.dto.response.*;
 import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
@@ -38,8 +35,8 @@ public class PlaceService {
     private final HeartRepository heartRepository;
 
     //지역, 테마에 해당하는 place 리스트 반환(페이지)
-    public ResponseEntity<List<PlaceListResponseDto>> getPlace(String theme, String areaCode, String sigunguCode, String pageNum) {
-        List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
+    public ResponseEntity<List<PlaceSortListResponseDto>> getPlace(String theme, String areaCode, String sigunguCode, String pageNum, UserDetailsImpl userDetails) {
+        List<PlaceSortListResponseDto> responseDtoList = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNum), 10);
         List<Place> placeList;
         if(sigunguCode.equals("")) {
@@ -54,17 +51,23 @@ public class PlaceService {
         for (Place place : placeList) {
             PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
-                responseDtoList.add(PlaceListResponseDto.builder()
+                responseDtoList.add(PlaceSortListResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
                         .image(img.getImageUrl())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
+                        .commentCount(place.getCount())
+                        .readCount(place.getReadCount())
                         .build());
             else
-                responseDtoList.add(PlaceListResponseDto.builder()
+                responseDtoList.add(PlaceSortListResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
+                        .commentCount(place.getCount())
+                        .readCount(place.getReadCount())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
                         .build());
         }
 
@@ -75,34 +78,45 @@ public class PlaceService {
      * 랜덤으로 지역을 하나 추천해준다.
      * 이 지역 내에서 테마별 장소를 랜덤으로 하나씩 뽑아서 보내준다.
      */
-    public ResponseEntity<RandomPlaceResponseDto> randomPlace() {
+    public ResponseEntity<RandomPlaceResponseDto> randomPlace(String areaCode, String sigunguCode, UserDetailsImpl userDetails) {
         List<PlaceListResponseDto> randomList = new ArrayList<>();
-        int areaCode = (int) (Math.random() * 17 + 1);
-        int sigunguCode;
+        int areaNum;
+        int sigunguNum;
+        if (areaCode.equals("")) {
+            areaNum = (int) (Math.random() * 17 + 1);
+            if (areaNum > 8) {
+                areaNum += 22;
+            }
+        } else {
+            areaNum = Integer.parseInt(areaCode);
+        }
+
         String[] themes = {"12", "14", "28", "39"};
         String area;
-        if (areaCode > 8) {
-            areaCode += 22;
 
-            while (true) {
-                sigunguCode = (int) (Math.random() * 31 + 1);
 
-                if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaCode), String.valueOf(sigunguCode)))
-                    break;
-            }
-
-            for (String theme : themes) {
-                randomList.add(randomSigungu(String.valueOf(areaCode), String.valueOf(sigunguCode), theme));
+        if(areaNum > 8 ) {
+            if(sigunguCode.equals(""))
+                while (true) {
+                    sigunguNum = (int) (Math.random() * 31 + 1);
+                    if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaNum), String.valueOf(sigunguNum)))
+                        break;
+                }
+            else
+                sigunguNum = Integer.parseInt(sigunguCode);
+            for (String themeCode : themes) {
+                randomList.add(randomSigungu(String.valueOf(areaNum), String.valueOf(sigunguNum), themeCode, userDetails));
             }
             area = getArea(randomList.get(0), 1);
-
-        } else {
-            for (String theme : themes) {
-
-                randomList.add(randomArea(String.valueOf(areaCode), theme));
+        }
+        else {
+            for (String themeCode : themes) {
+                randomList.add(randomArea(String.valueOf(areaNum), themeCode, userDetails));
             }
             area = getArea(randomList.get(0), 0);
+
         }
+
 
 
         return ResponseEntity.ok(RandomPlaceResponseDto.builder()
@@ -113,7 +127,7 @@ public class PlaceService {
 
 
     // 광역시, 특별시에 해당하는 지역에서 해당하는 테마의 관광지 랜덤 추첨
-    public PlaceListResponseDto randomArea(String areaCode, String theme) {
+    public PlaceListResponseDto randomArea(String areaCode, String theme, UserDetailsImpl userDetails) {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndTheme(String.valueOf(areaCode), theme);
 
@@ -127,6 +141,7 @@ public class PlaceService {
                     .star(place.getStar())
                     .image(img.getImageUrl())
                     .theme(place.getTheme())
+                    .state(getPlaceLikeState(place.getId(), userDetails))
                     .build();
         else
             return PlaceListResponseDto.builder()
@@ -134,6 +149,7 @@ public class PlaceService {
                     .title(place.getTitle())
                     .star(place.getStar())
                     .theme(place.getTheme())
+                    .state(getPlaceLikeState(place.getId(), userDetails))
                     .build();
 
     }
@@ -156,10 +172,10 @@ public class PlaceService {
     }
 
     //도 내에 시, 군 지역들의 해당하는 테마 랜덤 여행지 추첨
-    public PlaceListResponseDto randomSigungu(String areaCode, String sigungu, String theme) {
+    public PlaceListResponseDto randomSigungu(String areaCode, String sigunguCode, String theme, UserDetailsImpl userDetails) {
 
-        List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigungu, theme);
-
+        List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme);
+        System.out.println(areaCode+" "+sigunguCode);
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
 
@@ -171,6 +187,7 @@ public class PlaceService {
                     .star(place.getStar())
                     .image(img.getImageUrl())
                     .theme(place.getTheme())
+                    .state(getPlaceLikeState(place.getId(), userDetails))
                     .build();
         else
             return PlaceListResponseDto.builder()
@@ -178,12 +195,13 @@ public class PlaceService {
                     .title(place.getTitle())
                     .star(place.getStar())
                     .theme(place.getTheme())
+                    .state(getPlaceLikeState(place.getId(), userDetails))
                     .build();
 
     }
 
 
-    public List<PlaceListResponseDto> getRank(int theme) {
+    public List<PlaceListResponseDto> getRank(int theme, UserDetailsImpl userDetails) {
         PageRequest pageRequest = PageRequest.of(1, 10);
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
         List<Place> placeList = placeRepository.findAllByThemeOrderByReadCountDesc(String.valueOf(theme), pageRequest);
@@ -195,12 +213,16 @@ public class PlaceService {
                         .title(place.getTitle())
                         .star(place.getStar())
                         .image(img.getImageUrl())
+                        .theme(place.getTheme())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
                         .build());
             else
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
+                        .theme(place.getTheme())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
                         .build());
         }
         return responseDtoList;
@@ -415,7 +437,7 @@ public class PlaceService {
      * 사용자가 로그인을 하지 않았거나, 찜 하지 않았다면 false
      * 사용자가 찜을 한 상태라면 true
      */
-    public ResponseEntity<Boolean> getPlaceLikeState(Long id, UserDetailsImpl userDetails) {
+    public boolean getPlaceLikeState(Long id, UserDetailsImpl userDetails){
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
             throw new CustomException(ErrorCode.Not_Found_Place);
@@ -430,11 +452,11 @@ public class PlaceService {
                 }
             }
         }
-        return ResponseEntity.ok(state);
+        return state;
     }
 
     //사용자가 찜한 장소들의 리스트 반환
-    public ResponseEntity<List<PlaceListResponseDto>> getLikePlaceList(UserDetailsImpl userDetails) {
+    public ResponseEntity<List<PlaceLikeResponseDto>> getLikePlaceList(UserDetailsImpl userDetails) {
         if (userDetails == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
@@ -443,23 +465,31 @@ public class PlaceService {
 
         List<Heart> hearts = heartRepository.findAllByMember(member);
 
-        List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
+        List<PlaceLikeResponseDto> responseDtoList = new ArrayList<>();
 
         for (Heart heart : hearts) {
             Place place = heart.getPlace();
             PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
-                responseDtoList.add(PlaceListResponseDto.builder()
+                responseDtoList.add(PlaceLikeResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
                         .image(img.getImageUrl())
+                        .theme(place.getTheme())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
+                        .mapX(place.getMapX())
+                        .mapY(place.getMapY())
                         .build());
             else
-                responseDtoList.add(PlaceListResponseDto.builder()
+                responseDtoList.add(PlaceLikeResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
+                        .theme(place.getTheme())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
+                        .mapX(place.getMapX())
+                        .mapY(place.getMapY())
                         .build());
         }
         return ResponseEntity.ok(responseDtoList);
