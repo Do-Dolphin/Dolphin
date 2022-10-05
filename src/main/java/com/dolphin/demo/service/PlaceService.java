@@ -15,12 +15,21 @@ import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.PlaceImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,18 +43,20 @@ public class PlaceService {
     private final MemberRepository memberRepository;
     private final HeartRepository heartRepository;
 
+    @Value("${kakaoAPI.key}")
+    String key;
+
     //지역, 테마에 해당하는 place 리스트 반환(페이지)
     public ResponseEntity<List<PlaceSortListResponseDto>> getPlace(String theme, String areaCode, String sigunguCode, String pageNum, UserDetailsImpl userDetails) {
         List<PlaceSortListResponseDto> responseDtoList = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNum), 10);
         List<Place> placeList;
-        if(sigunguCode.equals("")) {
+        if (sigunguCode.equals("")) {
             if (areaCode.equals(""))
-                placeList = placeRepository.findAllByTheme(theme,pageRequest);
+                placeList = placeRepository.findAllByTheme(theme, pageRequest);
             else
-                placeList = placeRepository.findAllByAreaCodeAndTheme(areaCode,theme,pageRequest);
-        }
-        else
+                placeList = placeRepository.findAllByAreaCodeAndTheme(areaCode, theme, pageRequest);
+        } else
             placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
 
         for (Place place : placeList) {
@@ -95,8 +106,8 @@ public class PlaceService {
         String area;
 
 
-        if(areaNum > 8 ) {
-            if(sigunguCode.equals(""))
+        if (areaNum > 8) {
+            if (sigunguCode.equals(""))
                 while (true) {
                     sigunguNum = (int) (Math.random() * 31 + 1);
                     if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaNum), String.valueOf(sigunguNum)))
@@ -108,15 +119,13 @@ public class PlaceService {
                 randomList.add(randomSigungu(String.valueOf(areaNum), String.valueOf(sigunguNum), themeCode, userDetails));
             }
             area = getArea(randomList.get(0), 1);
-        }
-        else {
+        } else {
             for (String themeCode : themes) {
                 randomList.add(randomArea(String.valueOf(areaNum), themeCode, userDetails));
             }
             area = getArea(randomList.get(0), 0);
 
         }
-
 
 
         return ResponseEntity.ok(RandomPlaceResponseDto.builder()
@@ -163,7 +172,7 @@ public class PlaceService {
     public String getArea(PlaceListResponseDto responseDto, int n) {
         Place place = placeRepository.findById(responseDto.getId()).orElse(null);
         StringBuilder s = new StringBuilder();
-        s.append(place.getAddress().split( "특별시|특별자치도|특별자치시|광역시| ")[0]);
+        s.append(place.getAddress().split("특별시|특별자치도|특별자치시|광역시| ")[0]);
         for (int i = 1; i <= n; i++) {
             s.append(" ");
             s.append(place.getAddress().split(" ")[n]);
@@ -175,7 +184,7 @@ public class PlaceService {
     public PlaceListResponseDto randomSigungu(String areaCode, String sigunguCode, String theme, UserDetailsImpl userDetails) {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme);
-        System.out.println(areaCode+" "+sigunguCode);
+        System.out.println(areaCode + " " + sigunguCode);
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
 
@@ -262,7 +271,7 @@ public class PlaceService {
     @Transactional
     public void updateContent(Long id, String content) {
         Place place = placeRepository.findById(id).orElse(null);
-        if(place == null)
+        if (place == null)
             throw new CustomException(ErrorCode.Not_Found_Place);
         place.updateContent(content);
     }
@@ -280,6 +289,7 @@ public class PlaceService {
         Long id = placeRepository.findTopByOrderByIdDesc().getId();
         if (id < 5000000)
             id = 4999999L;
+        String[] coordinates = getCoordinates(requestDto.getAddress());
         Place place = Place.builder()
                 .id(id + 1)
                 .title(requestDto.getTitle())
@@ -290,8 +300,8 @@ public class PlaceService {
                 .star(0)
                 .theme(requestDto.getTheme())
                 .likes(0)
-                .mapX(requestDto.getMapX())
-                .mapY(requestDto.getMapY())
+                .mapX(coordinates[0])
+                .mapY(coordinates[1])
                 .readCount(0L)
                 .build();
 
@@ -334,12 +344,13 @@ public class PlaceService {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
             throw new CustomException(ErrorCode.Not_Found_Place);
-
-        place.update(placeRequestDto);
+        String[] coordinates = getCoordinates(placeRequestDto.getAddress());
+        place.update(placeRequestDto, coordinates[0], coordinates[1]);
 
         List<PlaceImage> images = imageRepository.findAllByPlace(place);
         List<String> imageUrlList;
         List<String> requestImages = new ArrayList<>();
+
 
         // 버킷에서 이미지 삭제
         for (PlaceImage placeImage : images) {
@@ -437,7 +448,7 @@ public class PlaceService {
      * 사용자가 로그인을 하지 않았거나, 찜 하지 않았다면 false
      * 사용자가 찜을 한 상태라면 true
      */
-    public boolean getPlaceLikeState(Long id, UserDetailsImpl userDetails){
+    public boolean getPlaceLikeState(Long id, UserDetailsImpl userDetails) {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
             throw new CustomException(ErrorCode.Not_Found_Place);
@@ -494,6 +505,49 @@ public class PlaceService {
         }
         return ResponseEntity.ok(responseDtoList);
 
+    }
+
+
+    public String[] getCoordinates(String address) {
+        String[] coordinates = new String[2];
+        try {
+            // parsing할 url 지정(API 키 포함해서)
+            StringBuilder urlStr = new StringBuilder("https://dapi.kakao.com/v2/local/search/address.json");
+            urlStr.append("?size=1");
+            urlStr.append("&page=1");
+            urlStr.append("&analyze_type=exac");
+            urlStr.append("&query=").append(URLEncoder.encode(address, "UTF-8"));
+
+
+            URL url = new URL(urlStr.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Authorization", "KakaoAK "+ key);
+
+            //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line = "";
+            String result = "";
+
+            while ((line = br.readLine()) != null) {
+                result += line;
+            }
+
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) parser.parse(result);
+            JSONArray addresses = (JSONArray) jsonObject.get("documents");
+            JSONObject adress = (JSONObject)addresses.get(0);
+
+            coordinates[0] = adress.get("x").toString();
+            coordinates[1] = adress.get("y").toString();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return coordinates;
     }
 
 }

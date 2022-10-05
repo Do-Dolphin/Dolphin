@@ -94,13 +94,13 @@ public class Place {
     }
   }
 
-  public void update(PlaceUpdateRequestDto requestDto){
+  public void update(PlaceUpdateRequestDto requestDto, String x, String y){
     this.title = requestDto.getTitle();
     this.content = requestDto.getContent();
     this.address = requestDto.getAddress();
     this.theme = requestDto.getTheme();
-    this.mapX = requestDto.getMapX();
-    this.mapY = requestDto.getMapY();
+    this.mapX = x;
+    this.mapY = y;
     this.areaCode = requestDto.getAreaCode();
     this.sigunguCode = requestDto.getSigunguCode();
   }
