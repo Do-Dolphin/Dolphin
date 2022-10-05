@@ -8,8 +8,8 @@ import java.util.List;
 @Builder
 @Getter
 public class RankListResponseDto {
-    private List<PlaceSortListResponseDto> foodList;
-    private List<PlaceSortListResponseDto> tourList;
-    private List<PlaceSortListResponseDto> activityList;
-    private List<PlaceSortListResponseDto> museumList;
+    private List<PlaceListResponseDto> foodList;
+    private List<PlaceListResponseDto> tourList;
+    private List<PlaceListResponseDto> activityList;
+    private List<PlaceListResponseDto> museumList;
 }
