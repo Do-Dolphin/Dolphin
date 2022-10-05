@@ -10,8 +10,6 @@ public class PlaceUpdateRequestDto {
     private String content;
     private String theme;
     private String address;
-    private String mapX;
-    private String mapY;
     private String sigunguCode;
     private String areaCode;
 
