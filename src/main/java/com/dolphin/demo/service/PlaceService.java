@@ -340,6 +340,7 @@ public class PlaceService {
     }
 
     // 장소 수정
+    @Transactional
     public ResponseEntity<PlaceResponseDto> updatePlace(Long id, PlaceUpdateRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
