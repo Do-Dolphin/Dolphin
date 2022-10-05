@@ -51,13 +51,14 @@ public class PlaceService {
         List<PlaceSortListResponseDto> responseDtoList = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNum), 10);
         List<Place> placeList;
-        if (sigunguCode.equals("")) {
-            if (areaCode.equals(""))
+        if (sigunguCode.equals("0")) {
+            if (areaCode.equals("0"))
                 placeList = placeRepository.findAllByTheme(theme, pageRequest);
             else
                 placeList = placeRepository.findAllByAreaCodeAndTheme(areaCode, theme, pageRequest);
-        } else
-            placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
+        } else {
+            placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme);
+        }
 
         for (Place place : placeList) {
             PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
@@ -93,7 +94,7 @@ public class PlaceService {
         List<PlaceListResponseDto> randomList = new ArrayList<>();
         int areaNum;
         int sigunguNum;
-        if (areaCode.equals("")) {
+        if (areaCode.equals("0")) {
             areaNum = (int) (Math.random() * 17 + 1);
             if (areaNum > 8) {
                 areaNum += 22;
@@ -107,7 +108,7 @@ public class PlaceService {
 
 
         if (areaNum > 8) {
-            if (sigunguCode.equals(""))
+            if (sigunguCode.equals("0"))
                 while (true) {
                     sigunguNum = (int) (Math.random() * 31 + 1);
                     if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaNum), String.valueOf(sigunguNum)))
