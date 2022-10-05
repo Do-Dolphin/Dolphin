@@ -57,7 +57,7 @@ public class PlaceService {
             else
                 placeList = placeRepository.findAllByAreaCodeAndTheme(areaCode, theme, pageRequest);
         } else {
-            placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme);
+            placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
         }
 
         for (Place place : placeList) {
