@@ -7,7 +7,6 @@ import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,26 +21,30 @@ public class PlaceController {
     private final PlaceService placeService;
 
     @GetMapping("/api/place")
-    public ResponseEntity<List<PlaceListResponseDto>> getPlace(@RequestParam("theme") String theme,
+    public ResponseEntity<List<PlaceSortListResponseDto>> getPlace(
+                                                               @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                               @RequestParam("theme") String theme,
                                                                @RequestParam("areaCode") String areaCode,
                                                                @RequestParam("sigunguCode") String sigunguCode,
                                                                @RequestParam("pageNum") String pageNum){
-        return placeService.getPlace(theme, areaCode, sigunguCode, pageNum);
+        return placeService.getPlace(theme, areaCode, sigunguCode, pageNum, userDetails);
     }
 
     @GetMapping("/api/place/random")
-    public ResponseEntity<RandomPlaceResponseDto> randomPlace(){
+    public ResponseEntity<RandomPlaceResponseDto> randomPlace(@RequestParam(value = "areaCode") String areaCode,
+                                                              @RequestParam(value = "sigunguCode") String sigunguCode,
+                                                              @AuthenticationPrincipal UserDetailsImpl userDetails){
 
-        return placeService.randomPlace();
+        return placeService.randomPlace(areaCode, sigunguCode, userDetails);
     }
 
     @GetMapping("api/place/rank")
-    public ResponseEntity<RankListResponseDto> getRank(){
+    public ResponseEntity<RankListResponseDto> getRank(@AuthenticationPrincipal UserDetailsImpl userDetails){
         return ResponseEntity.ok(RankListResponseDto.builder()
-                .tourList(placeService.getRank(12))
-                .museumList(placeService.getRank(14))
-                .activityList(placeService.getRank(28))
-                .foodList(placeService.getRank(39))
+                .tourList(placeService.getRank(12, userDetails))
+                .museumList(placeService.getRank(14, userDetails))
+                .activityList(placeService.getRank(28, userDetails))
+                .foodList(placeService.getRank(39, userDetails))
                 .build());
     }
 
@@ -80,11 +83,11 @@ public class PlaceController {
     @GetMapping("api/place/like/{id}")
     public ResponseEntity<Boolean> getPlaceLikeState(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                      @PathVariable Long id){
-        return placeService.getPlaceLikeState(id, userDetails);
+        return ResponseEntity.ok(placeService.getPlaceLikeState(id, userDetails));
     }
 
-    @GetMapping("api/auth/place/like")
-    public ResponseEntity<List<PlaceListResponseDto>> getLikePlaceList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @GetMapping("api/auth/place/mypage")
+    public ResponseEntity<List<PlaceLikeResponseDto>> getLikePlaceList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return placeService.getLikePlaceList(userDetails);
     }
 

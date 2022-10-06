@@ -84,18 +84,23 @@ public class Place {
   public void updateStar(int star, int i){
     this.count += i;
     this.total += star;
-    BigDecimal v1 = BigDecimal.valueOf(count);
-    BigDecimal v2 = BigDecimal.valueOf(total);
-    this.star = v2.divide(v1,1, RoundingMode.HALF_UP).floatValue();
+    if(count == 0) {
+      this.star = 0;
+    }
+    else {
+      BigDecimal v1 = BigDecimal.valueOf(count);
+      BigDecimal v2 = BigDecimal.valueOf(total);
+      this.star = v2.divide(v1, 1, RoundingMode.HALF_UP).floatValue();
+    }
   }
 
-  public void update(PlaceUpdateRequestDto requestDto){
+  public void update(PlaceUpdateRequestDto requestDto, String x, String y){
     this.title = requestDto.getTitle();
     this.content = requestDto.getContent();
     this.address = requestDto.getAddress();
     this.theme = requestDto.getTheme();
-    this.mapX = requestDto.getMapX();
-    this.mapY = requestDto.getMapY();
+    this.mapX = x;
+    this.mapY = y;
     this.areaCode = requestDto.getAreaCode();
     this.sigunguCode = requestDto.getSigunguCode();
   }

@@ -62,7 +62,7 @@ public class ApiService {
 
     public void content(String key){
         int i =0;
-        List<Place> places = placeRepository.findAllByContent("", PageRequest.of(1, 100));
+        List<Place> places = placeRepository.findAllByContent("", PageRequest.of(0, 100));
         for (Place place : places) {
             StringBuilder url = new StringBuilder("http://apis.data.go.kr/B551011/KorService/detailCommon");
             url.append("?serviceKey=" + key);
@@ -116,7 +116,7 @@ public class ApiService {
 
     @Transactional
     public void add(String key){
-        List<PlaceImage> images = imageRepository.findAllByStateFalse(PageRequest.of(1, 100));
+        List<PlaceImage> images = imageRepository.findAllByStateFalse(PageRequest.of(0, 100));
         List<PlaceImage> imageList = new ArrayList<>();
         for (PlaceImage placeImage : images) {
            placeService.updateState(placeImage.getId(), true);

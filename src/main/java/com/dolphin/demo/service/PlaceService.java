@@ -6,10 +6,7 @@ import com.dolphin.demo.domain.PlaceImage;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.PlaceRequestDto;
 import com.dolphin.demo.dto.request.PlaceUpdateRequestDto;
-import com.dolphin.demo.dto.response.HeartResponseDto;
-import com.dolphin.demo.dto.response.PlaceListResponseDto;
-import com.dolphin.demo.dto.response.PlaceResponseDto;
-import com.dolphin.demo.dto.response.RandomPlaceResponseDto;
+import com.dolphin.demo.dto.response.*;
 import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
@@ -18,12 +15,21 @@ import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.PlaceImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,34 +43,43 @@ public class PlaceService {
     private final MemberRepository memberRepository;
     private final HeartRepository heartRepository;
 
+    @Value("${kakaoAPI.key}")
+    String key;
+
     //지역, 테마에 해당하는 place 리스트 반환(페이지)
-    public ResponseEntity<List<PlaceListResponseDto>> getPlace(String theme, String areaCode, String sigunguCode, String pageNum) {
-        List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
+    public ResponseEntity<List<PlaceSortListResponseDto>> getPlace(String theme, String areaCode, String sigunguCode, String pageNum, UserDetailsImpl userDetails) {
+        List<PlaceSortListResponseDto> responseDtoList = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNum), 10);
         List<Place> placeList;
-        if(sigunguCode.equals("")) {
-            if (areaCode.equals(""))
-                placeList = placeRepository.findAllByTheme(theme,pageRequest);
+        if (sigunguCode.equals("0")) {
+            if (areaCode.equals("0"))
+                placeList = placeRepository.findAllByTheme(theme, pageRequest);
             else
-                placeList = placeRepository.findAllByAreaCodeAndTheme(areaCode,theme,pageRequest);
-        }
-        else
+                placeList = placeRepository.findAllByAreaCodeAndTheme(areaCode, theme, pageRequest);
+        } else {
             placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme, pageRequest);
+        }
 
         for (Place place : placeList) {
             PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
-                responseDtoList.add(PlaceListResponseDto.builder()
+                responseDtoList.add(PlaceSortListResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
                         .image(img.getImageUrl())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
+                        .commentCount(place.getCount())
+                        .readCount(place.getReadCount())
                         .build());
             else
-                responseDtoList.add(PlaceListResponseDto.builder()
+                responseDtoList.add(PlaceSortListResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
+                        .commentCount(place.getCount())
+                        .readCount(place.getReadCount())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
                         .build());
         }
 
@@ -75,33 +90,42 @@ public class PlaceService {
      * 랜덤으로 지역을 하나 추천해준다.
      * 이 지역 내에서 테마별 장소를 랜덤으로 하나씩 뽑아서 보내준다.
      */
-    public ResponseEntity<RandomPlaceResponseDto> randomPlace() {
+    public ResponseEntity<RandomPlaceResponseDto> randomPlace(String areaCode, String sigunguCode, UserDetailsImpl userDetails) {
         List<PlaceListResponseDto> randomList = new ArrayList<>();
-        int areaCode = (int) (Math.random() * 17 + 1);
-        int sigunguCode;
+        int areaNum;
+        int sigunguNum;
+        if (areaCode.equals("0")) {
+            areaNum = (int) (Math.random() * 17 + 1);
+            if (areaNum > 8) {
+                areaNum += 22;
+            }
+        } else {
+            areaNum = Integer.parseInt(areaCode);
+        }
+
         String[] themes = {"12", "14", "28", "39"};
         String area;
-        if (areaCode > 8) {
-            areaCode += 22;
 
-            while (true) {
-                sigunguCode = (int) (Math.random() * 31 + 1);
 
-                if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaCode), String.valueOf(sigunguCode)))
-                    break;
-            }
-
-            for (String theme : themes) {
-                randomList.add(randomSigungu(String.valueOf(areaCode), String.valueOf(sigunguCode), theme));
+        if (areaNum > 8) {
+            if (sigunguCode.equals("0"))
+                while (true) {
+                    sigunguNum = (int) (Math.random() * 31 + 1);
+                    if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaNum), String.valueOf(sigunguNum)))
+                        break;
+                }
+            else
+                sigunguNum = Integer.parseInt(sigunguCode);
+            for (String themeCode : themes) {
+                randomList.add(randomSigungu(String.valueOf(areaNum), String.valueOf(sigunguNum), themeCode, userDetails));
             }
             area = getArea(randomList.get(0), 1);
-
         } else {
-            for (String theme : themes) {
-
-                randomList.add(randomArea(String.valueOf(areaCode), theme));
+            for (String themeCode : themes) {
+                randomList.add(randomArea(String.valueOf(areaNum), themeCode, userDetails));
             }
             area = getArea(randomList.get(0), 0);
+
         }
 
 
@@ -113,7 +137,7 @@ public class PlaceService {
 
 
     // 광역시, 특별시에 해당하는 지역에서 해당하는 테마의 관광지 랜덤 추첨
-    public PlaceListResponseDto randomArea(String areaCode, String theme) {
+    public PlaceListResponseDto randomArea(String areaCode, String theme, UserDetailsImpl userDetails) {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndTheme(String.valueOf(areaCode), theme);
 
@@ -127,6 +151,7 @@ public class PlaceService {
                     .star(place.getStar())
                     .image(img.getImageUrl())
                     .theme(place.getTheme())
+                    .state(getPlaceLikeState(place.getId(), userDetails))
                     .build();
         else
             return PlaceListResponseDto.builder()
@@ -134,6 +159,7 @@ public class PlaceService {
                     .title(place.getTitle())
                     .star(place.getStar())
                     .theme(place.getTheme())
+                    .state(getPlaceLikeState(place.getId(), userDetails))
                     .build();
 
     }
@@ -147,7 +173,7 @@ public class PlaceService {
     public String getArea(PlaceListResponseDto responseDto, int n) {
         Place place = placeRepository.findById(responseDto.getId()).orElse(null);
         StringBuilder s = new StringBuilder();
-        s.append(place.getAddress().split( "특별시|특별자치도|특별자치시|광역시| ")[0]);
+        s.append(place.getAddress().split("특별시|특별자치도|특별자치시|광역시| ")[0]);
         for (int i = 1; i <= n; i++) {
             s.append(" ");
             s.append(place.getAddress().split(" ")[n]);
@@ -156,10 +182,10 @@ public class PlaceService {
     }
 
     //도 내에 시, 군 지역들의 해당하는 테마 랜덤 여행지 추첨
-    public PlaceListResponseDto randomSigungu(String areaCode, String sigungu, String theme) {
+    public PlaceListResponseDto randomSigungu(String areaCode, String sigunguCode, String theme, UserDetailsImpl userDetails) {
 
-        List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigungu, theme);
-
+        List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme);
+        System.out.println(areaCode + " " + sigunguCode);
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
 
@@ -171,6 +197,7 @@ public class PlaceService {
                     .star(place.getStar())
                     .image(img.getImageUrl())
                     .theme(place.getTheme())
+                    .state(getPlaceLikeState(place.getId(), userDetails))
                     .build();
         else
             return PlaceListResponseDto.builder()
@@ -178,12 +205,13 @@ public class PlaceService {
                     .title(place.getTitle())
                     .star(place.getStar())
                     .theme(place.getTheme())
+                    .state(getPlaceLikeState(place.getId(), userDetails))
                     .build();
 
     }
 
 
-    public List<PlaceListResponseDto> getRank(int theme) {
+    public List<PlaceListResponseDto> getRank(int theme, UserDetailsImpl userDetails) {
         PageRequest pageRequest = PageRequest.of(1, 10);
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
         List<Place> placeList = placeRepository.findAllByThemeOrderByReadCountDesc(String.valueOf(theme), pageRequest);
@@ -195,12 +223,16 @@ public class PlaceService {
                         .title(place.getTitle())
                         .star(place.getStar())
                         .image(img.getImageUrl())
+                        .theme(place.getTheme())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
                         .build());
             else
                 responseDtoList.add(PlaceListResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
+                        .theme(place.getTheme())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
                         .build());
         }
         return responseDtoList;
@@ -240,7 +272,7 @@ public class PlaceService {
     @Transactional
     public void updateContent(Long id, String content) {
         Place place = placeRepository.findById(id).orElse(null);
-        if(place == null)
+        if (place == null)
             throw new CustomException(ErrorCode.Not_Found_Place);
         place.updateContent(content);
     }
@@ -258,6 +290,7 @@ public class PlaceService {
         Long id = placeRepository.findTopByOrderByIdDesc().getId();
         if (id < 5000000)
             id = 4999999L;
+        String[] coordinates = getCoordinates(requestDto.getAddress());
         Place place = Place.builder()
                 .id(id + 1)
                 .title(requestDto.getTitle())
@@ -268,8 +301,8 @@ public class PlaceService {
                 .star(0)
                 .theme(requestDto.getTheme())
                 .likes(0)
-                .mapX(requestDto.getMapX())
-                .mapY(requestDto.getMapY())
+                .mapX(coordinates[0])
+                .mapY(coordinates[1])
                 .readCount(0L)
                 .build();
 
@@ -308,16 +341,18 @@ public class PlaceService {
     }
 
     // 장소 수정
+    @Transactional
     public ResponseEntity<PlaceResponseDto> updatePlace(Long id, PlaceUpdateRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
             throw new CustomException(ErrorCode.Not_Found_Place);
-
-        place.update(placeRequestDto);
+        String[] coordinates = getCoordinates(placeRequestDto.getAddress());
+        place.update(placeRequestDto, coordinates[0], coordinates[1]);
 
         List<PlaceImage> images = imageRepository.findAllByPlace(place);
         List<String> imageUrlList;
         List<String> requestImages = new ArrayList<>();
+
 
         // 버킷에서 이미지 삭제
         for (PlaceImage placeImage : images) {
@@ -415,7 +450,7 @@ public class PlaceService {
      * 사용자가 로그인을 하지 않았거나, 찜 하지 않았다면 false
      * 사용자가 찜을 한 상태라면 true
      */
-    public ResponseEntity<Boolean> getPlaceLikeState(Long id, UserDetailsImpl userDetails) {
+    public boolean getPlaceLikeState(Long id, UserDetailsImpl userDetails) {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
             throw new CustomException(ErrorCode.Not_Found_Place);
@@ -430,11 +465,11 @@ public class PlaceService {
                 }
             }
         }
-        return ResponseEntity.ok(state);
+        return state;
     }
 
     //사용자가 찜한 장소들의 리스트 반환
-    public ResponseEntity<List<PlaceListResponseDto>> getLikePlaceList(UserDetailsImpl userDetails) {
+    public ResponseEntity<List<PlaceLikeResponseDto>> getLikePlaceList(UserDetailsImpl userDetails) {
         if (userDetails == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
@@ -443,27 +478,78 @@ public class PlaceService {
 
         List<Heart> hearts = heartRepository.findAllByMember(member);
 
-        List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
+        List<PlaceLikeResponseDto> responseDtoList = new ArrayList<>();
 
         for (Heart heart : hearts) {
             Place place = heart.getPlace();
             PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
-                responseDtoList.add(PlaceListResponseDto.builder()
+                responseDtoList.add(PlaceLikeResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
                         .image(img.getImageUrl())
+                        .theme(place.getTheme())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
+                        .mapX(place.getMapX())
+                        .mapY(place.getMapY())
                         .build());
             else
-                responseDtoList.add(PlaceListResponseDto.builder()
+                responseDtoList.add(PlaceLikeResponseDto.builder()
                         .id(place.getId())
                         .title(place.getTitle())
                         .star(place.getStar())
+                        .theme(place.getTheme())
+                        .state(getPlaceLikeState(place.getId(), userDetails))
+                        .mapX(place.getMapX())
+                        .mapY(place.getMapY())
                         .build());
         }
         return ResponseEntity.ok(responseDtoList);
 
+    }
+
+
+    public String[] getCoordinates(String address) {
+        String[] coordinates = new String[2];
+        try {
+            // parsing할 url 지정(API 키 포함해서)
+            StringBuilder urlStr = new StringBuilder("https://dapi.kakao.com/v2/local/search/address.json");
+            urlStr.append("?size=1");
+            urlStr.append("&page=1");
+            urlStr.append("&analyze_type=exac");
+            urlStr.append("&query=").append(URLEncoder.encode(address, "UTF-8"));
+
+
+            URL url = new URL(urlStr.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Authorization", "KakaoAK "+ key);
+
+            //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line = "";
+            String result = "";
+
+            while ((line = br.readLine()) != null) {
+                result += line;
+            }
+
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) parser.parse(result);
+            JSONArray addresses = (JSONArray) jsonObject.get("documents");
+            JSONObject adress = (JSONObject)addresses.get(0);
+
+            coordinates[0] = adress.get("x").toString();
+            coordinates[1] = adress.get("y").toString();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return coordinates;
     }
 
 }
