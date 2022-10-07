@@ -8,9 +8,9 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
-  S3_BUCKET_NAME: github-action-yony
-  CODE_DEPLOY_APPLICATION_NAME: github-action-app
-  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: github-group
+  S3_BUCKET_NAME: my-https-test-bucket
+  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: develop
+  CODE_DEPLOY_APPLICATION_NAME: https-app
 
 permissions:
   contents: read
