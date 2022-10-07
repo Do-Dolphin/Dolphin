@@ -1,6 +1,9 @@
 # 📝돌고돌래
 
 - [프론트엔드 GitHub](https://github.com/Greendeww/dolgo-dolrae)
+- [백엔드 GitHub](https://github.com/Do-Dolphin/dolphin)
+- [팀노션](https://www.notion.so/1-695787ebec1e4ecd91a12ff8ae70f7b7)
+- [사이트 바로가기](http://dolgo.site/)
 ---
 ### 📌 프로젝트 소개
 - 여행지 추천 서비스
