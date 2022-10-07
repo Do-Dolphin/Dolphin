@@ -13,9 +13,9 @@
 |이름|포지션|담당 기능 구현|
 |------|---|---|
 |서나연|Backend|여행지 관련 기능(CRUD, 랜덤추천, 여행지찜하기, 마이페이지(찜한 여행지 목록), HTTPS, 서버 관리|
-|박성수|Backend|회원가입, 로그인(Spring security, JWT, 소셜로그인), 이메일인증, Redis, 알림기능|
+|박성수|Backend|회원가입, 로그인(Spring security, JWT, 소셜로그인), 이메일인증, Redis관리, 알림기능|
 |류경현|Backend|여행지 정렬, 테마별 TOP10|
-|강민승|Backend|댓글 관련 기능(CRUD, 마이페이지(댓글 목록)), 축제 관련 기능(CRUD), 검색기능(Querydsl)|
+|강민승|Backend|댓글 관련 기능(CRUD, 마이페이지(댓글 목록)), 축제 관련 기능(CRUD), 다중 파일 업로드 기능, S3관리, 검색기능(Querydsl)|
 
 <br>
 
