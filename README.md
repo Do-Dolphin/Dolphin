@@ -1,4 +1,4 @@
-# 📝돌고돌래
+# 돌고돌래🐋🐬🐳
 
 - [프론트엔드 GitHub](https://github.com/Greendeww/dolgo-dolrae)
 - [백엔드 GitHub](https://github.com/Do-Dolphin/dolphin)
