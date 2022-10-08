@@ -1,12 +1,9 @@
 package com.dolphin.demo.dto.request;
 
 import lombok.Getter;
-import lombok.Setter;
-
 
 @Getter
-public class AuthEmailRequestDto {
-
+public class MemberOutDto {
+    private String memberOut;
     private String email;
-    private String code;
 }

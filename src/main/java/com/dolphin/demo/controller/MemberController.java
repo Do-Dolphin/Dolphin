@@ -1,7 +1,7 @@
 package com.dolphin.demo.controller;
 
-import com.dolphin.demo.domain.MemberRoleEnum;
 import com.dolphin.demo.dto.request.LoginRequestDto;
+import com.dolphin.demo.dto.request.MemberOutDto;
 import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
 import com.dolphin.demo.dto.response.MemberResponseDto;
@@ -9,7 +9,6 @@ import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,6 +60,12 @@ public class MemberController {
             @RequestHeader(value = "RefreshToken") String refreshToken) {
 
         return memberService.reToken(accessToken, refreshToken);
+    }
+
+    @DeleteMapping("/api/auth/member/memberout")
+    public ResponseEntity<String> memberout(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                            @RequestBody MemberOutDto memberOutDto){
+        return memberService.memberout(userDetails.getMember(), memberOutDto);
     }
 
 }

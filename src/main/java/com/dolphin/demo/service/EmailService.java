@@ -1,5 +1,6 @@
 package com.dolphin.demo.service;
 
+import com.dolphin.demo.dto.request.AuthEmailRequestDto;
 import com.dolphin.demo.dto.request.LoginRequestDto;
 import com.dolphin.demo.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -71,16 +72,22 @@ public class EmailService {
             e.printStackTrace();
         }
 
+        String authcode = redisService.getValues(email);
+        if(authcode != null){
+            redisService.deleteValues(email);
+            System.out.println(authcode);
+        }
+        System.out.println(authcode);
         //redis에 5분 설정으로 authkey(key), email(value)저장
-        redisService.setValuesExpire(authKey, email, 60*5L);
+        redisService.setValuesExpire(email, authKey, 60*5L);
     }
 
-    public ResponseEntity<Boolean> authEmailCode(String code) {
+    public ResponseEntity<Boolean> authEmailCode(AuthEmailRequestDto requestDto) {
         // 입력 받은 code(key)를 이용해 email(value)을 꺼낸다.
-        String email = redisService.getValues(code);
+        String code = redisService.getValues(requestDto.getEmail());
 
-        // email이 존재하지 않으면, 유효 기간 만료이거나 코드 잘못 입력
-        if (email == null) {
+        // email이 존재하지 않으면 유효 기간 만료이거나 코드 잘못 입력
+        if (code == null || !code.equals(requestDto.getCode())) {
             return new ResponseEntity<>(false,HttpStatus.OK);
         }
 

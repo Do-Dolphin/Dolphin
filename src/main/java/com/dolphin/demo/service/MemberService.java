@@ -3,10 +3,14 @@ package com.dolphin.demo.service;
 import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.MemberRoleEnum;
 import com.dolphin.demo.dto.request.LoginRequestDto;
+import com.dolphin.demo.dto.request.MemberOutDto;
 import com.dolphin.demo.dto.request.NicknameDto;
 import com.dolphin.demo.dto.request.SignupRequestDto;
 import com.dolphin.demo.dto.response.MemberResponseDto;
+import com.dolphin.demo.exception.CustomException;
+import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.JwtTokenProvider;
+import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -69,7 +73,7 @@ public class MemberService {
 
     public ResponseEntity<String> logout(Long memberId, String refreshToken) {
         memberRepository.findById(memberId).orElseThrow(
-                () -> new IllegalArgumentException("로그아웃 실패")
+                () -> new CustomException(ErrorCode.UNAUTHORIZED_LOGIN)
         );
 
         String[] token = refreshToken.split(" ");
@@ -81,7 +85,7 @@ public class MemberService {
     @Transactional
     public ResponseEntity<MemberResponseDto> login(LoginRequestDto requestDto) {
         Member member = memberRepository.findByUsername(requestDto.getUsername()).orElseThrow(
-                () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
+                () -> new CustomException(ErrorCode.UNAUTHORIZED_LOGIN)
         );
 
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
@@ -176,7 +180,7 @@ public class MemberService {
     @Transactional
     public ResponseEntity<MemberResponseDto> updateNickname(Member memberinfo, NicknameDto nicknameDto) {
         Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
-                () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
+                () -> new CustomException(ErrorCode.UNAUTHORIZED_LOGIN)
         );
         member.updateNickname(nicknameDto);
 
@@ -190,7 +194,7 @@ public class MemberService {
     @Transactional
     public ResponseEntity<String> updatePassword(Member memberinfo, NicknameDto nicknameDto) {
         Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
-                () -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다.")
+                () -> new CustomException(ErrorCode.UNAUTHORIZED_LOGIN)
         );
         if(passwordEncoder.matches(member.getPassword(), nicknameDto.getPassword())){
             return new ResponseEntity<>("아이디와 비밀번호가 같지않습니다.",HttpStatus.OK);
@@ -203,6 +207,24 @@ public class MemberService {
 
 
         return new ResponseEntity<>("비밀번호가 변경되었습니다",HttpStatus.OK);
+    }
+
+    @Transactional
+    public ResponseEntity<String> memberout(Member memberinfo, MemberOutDto memberOutDto) {
+        Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
+                () -> new CustomException(ErrorCode.UNAUTHORIZED_LOGIN)
+        );
+        if(!member.getUsername().equals(memberOutDto.getEmail())){
+            return new ResponseEntity<>("동일한 아이디가 아닙니다.", HttpStatus.OK);
+        }
+
+        if(!memberOutDto.getMemberOut().equals("회원탈퇴를 동의합니다")){
+            return new ResponseEntity<>("회원탈퇴를 미동의하셨습니다.", HttpStatus.OK);
+        }
+
+        memberRepository.delete(member);
+
+        return new ResponseEntity<>("회원탈퇴되셨습니다. 개인정보는 즉시 파기됩니다", HttpStatus.OK);
     }
 }
 
