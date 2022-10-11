@@ -45,8 +45,7 @@ public class OrderService {
 
         Order order = orderRepository.findById(id).orElse(null);
         if(order == null)
-            //에러코드 바꿀때 나중에 수정해야함
-            throw new CustomException(ErrorCode.Not_Found_Place);
+            throw new CustomException(ErrorCode.NOT_FOUND_ORDER);
 
             List<OrderImage> imageResult = orderImageRepository.findAllByOrder(order);
             List<String> imageList = new ArrayList<>();
@@ -188,7 +187,7 @@ public class OrderService {
         Order order = orderRepository.findById(id).orElse(null);
         //나중에 exception 만들면 수정
         if(order == null)
-            throw  new CustomException(ErrorCode.Not_Found_Place);
+            throw  new CustomException(ErrorCode.NOT_FOUND_ORDER);
 
         order.updateState(order.isState());
 
