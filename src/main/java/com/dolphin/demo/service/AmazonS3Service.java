@@ -6,6 +6,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.dolphin.demo.exception.CustomException;
+import com.dolphin.demo.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import marvin.image.MarvinImage;
@@ -77,7 +79,7 @@ public class AmazonS3Service {
                 amazonS3Client.putObject(new PutObjectRequest(bucket, filename, inputStream, objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
             } catch (IOException e) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+                throw new CustomException(ErrorCode.UPLOAD_FAIL);
             }
 
             imageUrlList.add(amazonS3Client.getUrl(bucket, filename).toString());
@@ -108,7 +110,7 @@ public class AmazonS3Service {
             amazonS3Client.putObject(new PutObjectRequest(bucket, filename, inputStream, objectMetadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+            throw new CustomException(ErrorCode.UPLOAD_FAIL);
         }
         return amazonS3Client.getUrl(bucket, filename).toString();
     }
@@ -138,7 +140,7 @@ public class AmazonS3Service {
             String mimeType = tika.detect(multipartFile.get(i).getInputStream());
             /* MIME타입이 이미지가 아니면 exception 발생 */
             if (!mimeType.startsWith("image/")) {
-                throw new IllegalStateException("이미지 파일이 아닙니다");
+                throw new CustomException(ErrorCode.BAD_REQUEST_IMAGE);
             }
         }
     }
@@ -150,7 +152,7 @@ public class AmazonS3Service {
         String mimeType = tika.detect(multipartFile.getInputStream());
 
         if (!mimeType.startsWith("image/")) {
-            throw new IllegalStateException("이미지 파일이 아닙니다");
+            throw new CustomException(ErrorCode.BAD_REQUEST_IMAGE);
         }
     }
 

@@ -16,8 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.dolphin.demo.exception.ErrorCode.DO_NOT_MATCH_USER;
-import static com.dolphin.demo.exception.ErrorCode.Not_Found_Place;
+import static com.dolphin.demo.exception.ErrorCode.*;
 
 
 @RequiredArgsConstructor
@@ -82,7 +81,7 @@ public class CommentService {
 
         // 여행지 존재 여부 검증
         Place place = placeRepository.findById(place_id)
-                .orElseThrow(() -> new CustomException(Not_Found_Place));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_PLACE));
 
         // 제목, 내용, 별점을 저장
         Comment comment = new Comment(commentRequestDto, place, member);
@@ -134,7 +133,7 @@ public class CommentService {
 
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(comment_id)
-                .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_COMMENT));
 
         // 작성자가 맞는지 여부 검증
         if(!(comment.getMember().getId().equals(member.getId()))) {
@@ -229,7 +228,7 @@ public class CommentService {
 
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("후기가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_COMMENT));
 
         // 작성자가 맞는지 여부 검증
         if(!(comment.getMember().getId().equals(member.getId()))) {
