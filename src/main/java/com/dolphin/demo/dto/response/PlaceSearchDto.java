@@ -17,6 +17,7 @@ public class PlaceSearchDto {
     private int commentCount;
 
 
+    // Querydsl 사용하기 위해서
     @QueryProjection
     public PlaceSearchDto(Long placeId, String title, float star, String image, Long readCount, int commentCount) {
         this.placeId = placeId;
