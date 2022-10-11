@@ -245,7 +245,7 @@ public class PlaceService {
         Place place = placeRepository.findById(id).orElse(null);
 
         if (place == null)
-            throw new CustomException(ErrorCode.Not_Found_Place);
+            throw new CustomException(ErrorCode.NOT_FOUND_PLACE);
 
         List<PlaceImage> img = imageRepository.findAllByPlace(place);
         List<String> images = new ArrayList<>();
@@ -273,7 +273,7 @@ public class PlaceService {
     public void updateContent(Long id, String content) {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            throw new CustomException(ErrorCode.Not_Found_Place);
+            throw new CustomException(ErrorCode.NOT_FOUND_PLACE);
         place.updateContent(content);
     }
 
@@ -345,7 +345,7 @@ public class PlaceService {
     public ResponseEntity<PlaceResponseDto> updatePlace(Long id, PlaceUpdateRequestDto placeRequestDto, List<MultipartFile> multipartFiles) throws IOException {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            throw new CustomException(ErrorCode.Not_Found_Place);
+            throw new CustomException(ErrorCode.NOT_FOUND_PLACE);
         String[] coordinates = getCoordinates(placeRequestDto.getAddress());
         place.update(placeRequestDto, coordinates[0], coordinates[1]);
 
@@ -398,7 +398,7 @@ public class PlaceService {
 
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            throw new CustomException(ErrorCode.Not_Found_Place);
+            throw new CustomException(ErrorCode.NOT_FOUND_PLACE);
         List<PlaceImage> images = imageRepository.findAllByPlace(place);
         // 버킷에서 이미지 삭제
         for (int i = 0; i < images.size(); i++) {
@@ -422,7 +422,7 @@ public class PlaceService {
 
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            throw new CustomException(ErrorCode.Not_Found_Place);
+            throw new CustomException(ErrorCode.NOT_FOUND_PLACE);
 
         boolean state;
 
@@ -453,7 +453,7 @@ public class PlaceService {
     public boolean getPlaceLikeState(Long id, UserDetailsImpl userDetails) {
         Place place = placeRepository.findById(id).orElse(null);
         if (place == null)
-            throw new CustomException(ErrorCode.Not_Found_Place);
+            throw new CustomException(ErrorCode.NOT_FOUND_PLACE);
 
         boolean state = false;
         if (userDetails != null) {
