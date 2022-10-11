@@ -142,12 +142,11 @@ public class OrderService {
         content.append("장소 이름: "+placeRequestDto.getTitle()+"\n");
         content.append("장소 설명: "+placeRequestDto.getContent()+"\n");
         content.append("장소 주소: "+placeRequestDto.getAddress()+"\n");
-        content.append("장소 테마: "+placeRequestDto.getTheme()+"\n");
 
         Order order = Order.builder()
                 .content(content.toString())
                 .title(placeRequestDto.getTitle()+" 생성 요청")
-                .type("추가")
+                .type(placeRequestDto.getType())
                 .member(member)
                 .state(false)
                 .build();

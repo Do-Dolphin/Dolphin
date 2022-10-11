@@ -95,7 +95,7 @@ public class ApiService {
         }
     }
 
-    @Scheduled(cron = "0 */20 * * * ?")
+    @Scheduled(cron = "0 0 2 10 * ?")
     public void addImage() {
         content(apiKey);
         content(apiKey2);
