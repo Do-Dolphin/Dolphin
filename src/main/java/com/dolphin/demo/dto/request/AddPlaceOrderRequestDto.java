@@ -6,6 +6,6 @@ import lombok.Getter;
 public class AddPlaceOrderRequestDto {
     private String title;
     private String content;
-    private String theme;
+    private String type;
     private String address;
 }
