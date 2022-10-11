@@ -32,7 +32,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
                         place.readCount,
                         place.count))
                 .from(place)
-                .leftJoin(place.imageList, placeImage)
+                .leftJoin(place.imageList, placeImage).limit(1)
                 .where(titleContains(keyword))
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
@@ -40,7 +40,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
         int totalSize = queryFactory
                 .selectFrom(place)
-                .leftJoin(place.imageList, placeImage)
+                .leftJoin(place.imageList, placeImage).limit(1)
                 .where(titleContains(keyword))
                 .fetch().size();
 
