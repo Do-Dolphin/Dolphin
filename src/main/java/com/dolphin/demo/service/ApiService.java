@@ -135,7 +135,7 @@ public class ApiService {
     }
 
 
-    @Scheduled(cron = "0 45 14 12 * ?")
+    @Scheduled(cron = "0 25 15 12 * ?")
     @Transactional
     public void updatePlace() {
         String[] themes = {"12", "14", "28", "39"};
