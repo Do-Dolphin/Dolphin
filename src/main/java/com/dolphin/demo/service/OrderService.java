@@ -3,6 +3,7 @@ package com.dolphin.demo.service;
 import com.dolphin.demo.domain.Order;
 import com.dolphin.demo.domain.OrderImage;
 import com.dolphin.demo.domain.Member;
+import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.AddPlaceOrderRequestDto;
 import com.dolphin.demo.dto.request.OrderRequestDto;
 import com.dolphin.demo.dto.response.OrderListResponseDto;
@@ -188,11 +189,43 @@ public class OrderService {
         if(order == null)
             throw  new CustomException(ErrorCode.NOT_FOUND_ORDER);
 
-        order.updateState(order.isState());
+        order.updateState(true);
 
         return ResponseEntity.ok().body(order.isState());
     }
 
+
+    @Transactional
+    public void createApiOrder(Place place, String title, String image) {
+
+        Member member = memberRepository.findByUsername("admin").orElse(null);
+
+        StringBuilder content = new StringBuilder();
+        content.append("장소 이름: "+place.getTitle()+"\n");
+        content.append("장소 설명: "+place.getContent()+"\n");
+        content.append("장소 주소: "+place.getAddress()+"\n");
+        content.append("지역 코드: "+place.getAddress()+"\n");
+        content.append("시군구 코드: "+place.getAddress()+"\n");
+        content.append("장소 이미지: "+image+"\n");
+
+        Order order = Order.builder()
+                .content(content.toString())
+                .title(title)
+                .type("추가")
+                .member(member)
+                .state(false)
+                .build();
+        orderRepository.save(order);
+
+
+        if(!image.equals("")){
+            orderImageRepository.save( OrderImage.builder()
+                    .order(order)
+                    .imageUrl(image)
+                    .build());
+
+        }
+    }
 
 
     @Scheduled(cron = "0 0 0 1 * ?")
