@@ -152,6 +152,17 @@ public class CommentService {
         List<String> imageList = new ArrayList<>();
         // 새로 등록하는 이미지가 없는 경우
         if(multipartFile == null) {
+            for (CommentImage commentImage : image) {
+                if (!imageRequestDto.getExistUrlList().contains(commentImage.getImageUrl())) {
+                    // S3 저장소에서 삭제
+                    amazonS3Service.deleteFile(commentImage.getImageUrl().substring(commentImage.getImageUrl().lastIndexOf("/") + 1));
+                    // DB 이미지 삭제
+                    commentImageRepository.delete(commentImage);
+                }
+                else {
+                    imageList.add(commentImage.getImageUrl());
+                }
+            }
             return ResponseEntity.ok().body(CommentResponseDto.builder()
                     .comment_id(comment.getId())
                     .place_id(comment.getPlace().getId())
@@ -159,6 +170,7 @@ public class CommentService {
                     .nickname(comment.getMember().getNickname())
                     .title(comment.getTitle())
                     .content(comment.getContent())
+                    .imageList(imageList)
                     .star(comment.getStar())
                     .createdAt(comment.getCreatedAt())
                     .modifiedAt(comment.getModifiedAt())
