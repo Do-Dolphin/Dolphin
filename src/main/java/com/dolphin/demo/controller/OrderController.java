@@ -64,7 +64,7 @@ public class OrderController {
     }
 
     //    @Secured("ADMIN")
-    @PutMapping("/order/{id}")
+    @PostMapping("/order/state/{id}")
     public ResponseEntity<Boolean> updateState(@PathVariable Long id){
         return orderService.udateState(id);
     }
