@@ -39,6 +39,6 @@ public class Order extends Timestamped {
     private Member member;
 
     public void updateState(boolean state){
-        this.state = !state;
+        this.state = state;
     }
 }
