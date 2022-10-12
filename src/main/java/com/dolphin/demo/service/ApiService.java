@@ -84,7 +84,7 @@ public class ApiService {
         }
     }
 
-    @Scheduled(cron = "0 0 2 * * ?")
+    @Scheduled(cron = "0 0 2 12 * ?")
     public void addImage() {
         content(apiKey);
 
@@ -135,7 +135,7 @@ public class ApiService {
     }
 
 
-    @Scheduled(cron = "0 25 15 12 * ?")
+    @Scheduled(cron = "0 0 2 12 * ?")
     @Transactional
     public void updatePlace() {
         String[] themes = {"12", "14", "28", "39"};
@@ -199,18 +199,22 @@ public class ApiService {
                     String img = getTagValue("firstimage", eElement);
                     if(place.getAddress().equals("")){
                         orderService.createApiOrder(place, "주소값 누락", img);
+                        logger.info("order 주소값 누락 저장 완료");
                         continue;
                     }
                     if(place.getAreaCode().equals("")){
                         orderService.createApiOrder(place, "지역코드 누락", img);
+                        logger.info("order 지역코드 누락 저장 완료");
                         continue;
                     }
                     if(Integer.parseInt(place.getAreaCode()) > 8 && place.getSigunguCode().equals("")){
                         orderService.createApiOrder(place, "시군구코드 누락", img);
+                        logger.info("order 시군구코드 누락 저장 완료");
                         continue;
                     }
-                    if(Integer.parseInt(place.getMapX()) == 0 || Integer.parseInt(place.getMapX()) >= 132|| Integer.parseInt(place.getMapX()) == 0 || Integer.parseInt(place.getMapX()) >= 39){
+                    if(Double.parseDouble(place.getMapX()) == 0 || Double.parseDouble(place.getMapX()) >= 132|| Double.parseDouble(place.getMapX()) == 0 || Double.parseDouble(place.getMapX()) >= 39){
                         orderService.createApiOrder(place, "유효하지 않은 좌표값", img);
+                        logger.info("order 유효하지 않은 좌표값 저장 완료");
                         continue;
                     }
                     if (!img.equals(""))

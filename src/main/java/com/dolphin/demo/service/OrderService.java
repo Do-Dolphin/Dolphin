@@ -198,14 +198,14 @@ public class OrderService {
     @Transactional
     public void createApiOrder(Place place, String title, String image) {
 
-        Member member = memberRepository.findByUsername("admin").orElse(null);
+        Member member = memberRepository.findByNickname("admin").orElse(null);
 
         StringBuilder content = new StringBuilder();
         content.append("장소 이름: "+place.getTitle()+"\n");
         content.append("장소 설명: "+place.getContent()+"\n");
         content.append("장소 주소: "+place.getAddress()+"\n");
-        content.append("지역 코드: "+place.getAddress()+"\n");
-        content.append("시군구 코드: "+place.getAddress()+"\n");
+        content.append("지역 코드: "+place.getAreaCode()+"\n");
+        content.append("시군구 코드: "+place.getSigunguCode()+"\n");
         content.append("장소 이미지: "+image+"\n");
 
         Order order = Order.builder()
