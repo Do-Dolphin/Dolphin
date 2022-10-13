@@ -62,7 +62,7 @@ public class MemberController {
         return memberService.reToken(accessToken, refreshToken);
     }
 
-    @DeleteMapping("/api/auth/member/memberout")
+    @PostMapping("/api/auth/member/memberout")
     public ResponseEntity<String> memberout(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                             @RequestBody MemberOutDto memberOutDto){
         return memberService.memberout(userDetails.getMember(), memberOutDto);

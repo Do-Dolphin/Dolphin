@@ -2,6 +2,7 @@ package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.MemberRoleEnum;
+import com.dolphin.demo.domain.OutMember;
 import com.dolphin.demo.dto.request.LoginRequestDto;
 import com.dolphin.demo.dto.request.MemberOutDto;
 import com.dolphin.demo.dto.request.NicknameDto;
@@ -12,10 +13,12 @@ import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.JwtTokenProvider;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.MemberRepository;
+import com.dolphin.demo.repository.OutMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import javax.mail.internet.MimeMessage;
 import javax.validation.Valid;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -43,9 +50,13 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
+    private final OutMemberRepository outMemberRepository;
+
     @Transactional
     public ResponseEntity<MemberResponseDto> signup(SignupRequestDto requestDto) {
-        System.out.println(requestDto.getUsername());
+        if(outMemberRepository.existsByUsername(requestDto.getUsername())){
+            throw new IllegalArgumentException("회원탈퇴 후 7일이 지나지 않았습니다.");
+        }
         if (!requestDto.getPassword().equals(requestDto.getPasswordConfirm())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
@@ -159,7 +170,7 @@ public class MemberService {
                 "요리하는 ", "비내리길기원하는 ", "스케이트타는 ", "음료를뽑는 ", "타자치는 ", "비를피하는 ", "태양을피하는 ", "태양을피하고싶은 ", "양을치는 ", "눈사람만드는 ",
                 "종을치는 ", "종칠준비를하는 ", "사자와달리기하는 ", "하이에나와달리기하는 ", "스키타는 ", "미끄러지는 ", "미끄럼틀타는 ", "먹이주는 ", "임을생각하는 ", "너무자고싶은 ",
                 "숨어있는 ", "열쇠찾는 ", "낙서하는 ", "날개짓하는 ", "이슬을피하는 ", "끝없이코딩하는", "전이먹고싶은", "회가먹고싶은", "파파야가먹고싶은", "두리안이먹고싶은 ","거절하는",
-                "숙제하는 ", "보물찾는 ", "이모를찾는 ", "과자먹는 ", "몰래자러가는 ", "온도재는 ", "방송하는 ", "헤엄치는 ", "자랑하는 ", "네모네모한", "귀여움을뽑내는 ", "꿈틀거리는 ",
+                "숙제하는 ", "보물찾는 ", "이모를찾는 ", "과자먹는 ", "몰래자러가는 ", "온도재는 ", "방송하는 ", "헤엄치는 ", "자랑하는 ", "네모네모한 ", "귀여움을뽑내는 ", "꿈틀거리는 ",
                 "셀카찍는 ", "사진찍는 ", "드러눕는 ", "청소하는 ", "간식먹는 ", "광합성하는 ", "굴러다니는 ", "활기찬 ", "음침한 ", "신호지키는 ", "손을들고건너는 ", "고스톱치는 ",
                 "행복한 ", "떠드는 ", "다리떠는 ", "꿈꾸는 ", "즐겁게춤추는 ", "즐거운 ", "캐리어를끄는 ");
 
@@ -221,10 +232,26 @@ public class MemberService {
         if(!memberOutDto.getMemberOut().equals("회원탈퇴를 동의합니다")){
             return new ResponseEntity<>("회원탈퇴를 미동의하셨습니다.", HttpStatus.OK);
         }
+        OutMember outMember = OutMember.builder()
+                        .username(member.getUsername())
+                        .nickname(member.getNickname())
+                        .build();
 
-        memberRepository.delete(member);
+        outMemberRepository.save(outMember);
 
-        return new ResponseEntity<>("회원탈퇴되셨습니다. 개인정보는 즉시 파기됩니다", HttpStatus.OK);
+        member.OutMember();
+
+        return new ResponseEntity<>("회원탈퇴되었습니다." , HttpStatus.OK);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void OutMember(){
+        LocalDateTime now = LocalDateTime.now();
+        List<OutMember> outMembers = outMemberRepository.findAll();
+        for(OutMember outMember : outMembers)
+          if(ChronoUnit.DAYS.between(outMember.getCreatedAt(), now) > 7){
+              outMemberRepository.delete(outMember);
+        }
     }
 }
 
