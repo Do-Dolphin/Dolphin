@@ -19,7 +19,9 @@ public class SearchController {
     // 키워드로 여행지 전체 검색
     @GetMapping("/api/place/search")
     public Page<PlaceSearchDto> keywordSearch(@RequestParam("keyword") String keyword,
-                                              @RequestParam("pageNum") String pageNum) {
-        return placeRepository.keywordSearch(keyword, pageNum);
+                                              @RequestParam("pageNum") String pageNum,
+                                              @RequestParam("areaCode") String areaCode,
+                                              @RequestParam("sigunguCode") String sigunguCode) {
+        return placeRepository.keywordSearch(keyword, pageNum, areaCode, sigunguCode);
     }
 }
