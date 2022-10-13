@@ -42,6 +42,7 @@ public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger("오더 삭제 로그");
 
 
+    //입력받은 id 요청의 상세 정보를 조회할 수 있는 메서드
     public ResponseEntity<OrderResponseDto> getOrder(Long id) {
 
         Order order = orderRepository.findById(id).orElse(null);
@@ -68,6 +69,7 @@ public class OrderService {
                     .build());
     }
 
+    //요청 리스트를 반환하는 메서드
     public ResponseEntity<List<OrderListResponseDto>> getOrderList() {
 
         List<Order> orderList = orderRepository.findAllByOrderByStateAsc();
@@ -87,6 +89,7 @@ public class OrderService {
         return ResponseEntity.ok().body(orderResult);
     }
 
+    //수정 및 삭제 관련 요청을 등록하는 메서드
     @Transactional
     public ResponseEntity<OrderResponseDto> createOrder(Long place_id, OrderRequestDto orderRequestDto, List<MultipartFile> multipartFile, UserDetailsImpl userDetails) throws IOException {
 
@@ -95,7 +98,7 @@ public class OrderService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Order order = Order.builder()
                         .content(orderRequestDto.getContent())
-                        .title(orderRequestDto.getTitle())
+                        .title(orderRequestDto.getTitle() + " " + orderRequestDto.getType() + " 요청")
                         .type(orderRequestDto.getType())
                         .member(member)
                         .state(false)
@@ -132,6 +135,7 @@ public class OrderService {
                 .build());
     }
 
+    //장소 추가 요청을 생성하는 메서드
     @Transactional
     public ResponseEntity<OrderResponseDto> createAddOrder(AddPlaceOrderRequestDto placeRequestDto, List<MultipartFile> multipartFile, UserDetailsImpl userDetails) throws IOException {
 
@@ -146,7 +150,7 @@ public class OrderService {
 
         Order order = Order.builder()
                 .content(content.toString())
-                .title(placeRequestDto.getTitle()+" 생성 요청")
+                .title(placeRequestDto.getTitle()+" 추가 요청")
                 .type(placeRequestDto.getType())
                 .member(member)
                 .state(false)
@@ -181,11 +185,12 @@ public class OrderService {
                 .build());
     }
 
+    //완료한 데이터를 true 상태로 업데이트 해주는 메서드
     @Transactional
     public ResponseEntity<Boolean> udateState(Long id) {
 
         Order order = orderRepository.findById(id).orElse(null);
-        //나중에 exception 만들면 수정
+
         if(order == null)
             throw  new CustomException(ErrorCode.NOT_FOUND_ORDER);
 
@@ -195,6 +200,7 @@ public class OrderService {
     }
 
 
+    //open api에서 유효하지 않은 데이터를 걸러서 order로 생성
     @Transactional
     public void createApiOrder(Place place, String title, String image) {
 
@@ -228,6 +234,7 @@ public class OrderService {
     }
 
 
+    //한 달에 한 번 처리된 요청을 삭제하는 메서드
     @Scheduled(cron = "0 0 0 1 * ?")
     public void deleteOrder(){
         logger.info(new Date() + " 스케쥴러 실행");
