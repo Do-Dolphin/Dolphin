@@ -39,6 +39,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
                 .limit(pageRequest.getPageSize())
                 .fetch();
         System.out.println(areaCode);
+        System.out.println(sigunguCode);
 
         int totalSize = queryFactory
                 .selectFrom(place)
@@ -56,6 +57,9 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
     }
 
     private BooleanExpression regionSelect(String areaCode, String sigunguCode) {
-        return areaCode.equals("0") & sigunguCode.equals("0") ? null : place.areaCode.eq(areaCode).and(place.sigunguCode.eq(sigunguCode));
+//        return areaCode.equals("0") & sigunguCode.equals("0") ? null : place.areaCode.eq(areaCode).and(place.sigunguCode.eq(sigunguCode));
+        if (areaCode.equals("0") & sigunguCode.equals("0")) return null;
+        else if(!areaCode.equals("0") & sigunguCode.equals("0")) return place.areaCode.eq(areaCode);
+        else return place.areaCode.eq(areaCode).and(place.sigunguCode.eq(sigunguCode));
     }
 }
