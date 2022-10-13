@@ -21,7 +21,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
         this.queryFactory = new JPAQueryFactory(em);
     }
 
-    public Page<PlaceSearchDto> keywordSearch(String keyword, String pageNum) {
+    public Page<PlaceSearchDto> keywordSearch(String keyword, String pageNum, String areaCode, String sigunguCode) {
         PageRequest pageRequest = PageRequest.of(Integer.parseInt(pageNum), 10);
         List<PlaceSearchDto> result = queryFactory
                 .select(new QPlaceSearchDto(
@@ -34,22 +34,28 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
                 .from(place)
                 .leftJoin(place.imageList, placeImage)
                 .groupBy(place.id)
-                .where(titleContains(keyword))
+                .where(titleContains(keyword), regionSelect(areaCode, sigunguCode))
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
                 .fetch();
+        System.out.println(areaCode);
 
         int totalSize = queryFactory
                 .selectFrom(place)
                 .leftJoin(place.imageList, placeImage)
                 .groupBy(place.id)
-                .where(titleContains(keyword))
+                .where(titleContains(keyword), regionSelect(areaCode, sigunguCode))
                 .fetch().size();
 
         return new PageImpl<>(result, pageRequest, totalSize);
     }
 
     private BooleanExpression titleContains(String keyword) {
-        return ObjectUtils.isEmpty(keyword) ? null : place.title.containsIgnoreCase(keyword);
+        String notBlank = keyword.replaceAll(" ", "");
+        return ObjectUtils.isEmpty(keyword) ? null : place.title.containsIgnoreCase(keyword).or(place.title.containsIgnoreCase(notBlank));
+    }
+
+    private BooleanExpression regionSelect(String areaCode, String sigunguCode) {
+        return areaCode.equals("0") & sigunguCode.equals("0") ? null : place.areaCode.eq(areaCode).and(place.sigunguCode.eq(sigunguCode));
     }
 }
