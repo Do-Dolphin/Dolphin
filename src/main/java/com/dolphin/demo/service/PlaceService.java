@@ -88,7 +88,8 @@ public class PlaceService {
 
     /**
      * 랜덤으로 지역을 하나 추천해준다.
-     * 이 지역 내에서 테마별 장소를 랜덤으로 하나씩 뽑아서 보내준다.
+     * 지역을 입력 받으면 지역내에서 테마별 장소를 랜덤으로 하나씩 뽑아서 보내준다.
+     * 지역 코드에 0이 들어오면 지역 무관 전체 랜덤
      */
     public ResponseEntity<RandomPlaceResponseDto> randomPlace(String areaCode, String sigunguCode, UserDetailsImpl userDetails) {
         List<PlaceListResponseDto> randomList = new ArrayList<>();
@@ -211,6 +212,7 @@ public class PlaceService {
     }
 
 
+    //한국관광공사 api 에서 제공하는 조회수 기준으로 테마별 top10을 보여주는 메서드
     public List<PlaceListResponseDto> getRank(int theme, UserDetailsImpl userDetails) {
         PageRequest pageRequest = PageRequest.of(1, 10);
         List<PlaceListResponseDto> responseDtoList = new ArrayList<>();
@@ -269,6 +271,7 @@ public class PlaceService {
 
     }
 
+    //api service에서 조회한 content를 place에 업데이트 하는 메서드
     @Transactional
     public void updateContent(Long id, String content) {
         Place place = placeRepository.findById(id).orElse(null);
@@ -278,6 +281,7 @@ public class PlaceService {
     }
 
 
+    //api service에서 추가 이미지를 가져오기 위해 탐색한 이미지의 상태를 처리하는 메서드
     @Transactional
     public void updateState(Long id, boolean state) {
         PlaceImage placeImage = imageRepository.findById(id).orElse(null);
@@ -296,8 +300,8 @@ public class PlaceService {
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .address(requestDto.getAddress())
-                .areaCode(requestDto.getAddress())
-                .sigunguCode(requestDto.getAddress())
+                .areaCode(requestDto.getAreaCode())
+                .sigunguCode(requestDto.getSigunguCode())
                 .star(0)
                 .theme(requestDto.getTheme())
                 .likes(0)
@@ -510,10 +514,10 @@ public class PlaceService {
     }
 
 
+    //입력받은 주소를 카카오 api를 통해 좌표값을 얻어내는 메서드
     public String[] getCoordinates(String address) {
         String[] coordinates = new String[2];
         try {
-            // parsing할 url 지정(API 키 포함해서)
             StringBuilder urlStr = new StringBuilder("https://dapi.kakao.com/v2/local/search/address.json");
             urlStr.append("?size=1");
             urlStr.append("&page=1");
