@@ -109,6 +109,7 @@ public class MemberService {
         return new ResponseEntity<>(MemberResponseDto.builder()
                 .username(member.getUsername())
                 .nickname(member.getNickname())
+                .role(member.getRole())
                 .build(),HttpStatus.OK);
     }
 
@@ -220,6 +221,7 @@ public class MemberService {
         return new ResponseEntity<>("비밀번호가 변경되었습니다",HttpStatus.OK);
     }
 
+    //회원탈퇴
     @Transactional
     public ResponseEntity<String> memberout(Member memberinfo, MemberOutDto memberOutDto) {
         Member member = memberRepository.findByUsername(memberinfo.getUsername()).orElseThrow(
@@ -244,6 +246,7 @@ public class MemberService {
         return new ResponseEntity<>("회원탈퇴되었습니다." , HttpStatus.OK);
     }
 
+    //회원탈퇴 개인정보보관 7일 후 삭제
     @Scheduled(cron = "0 0 0 * * *")
     public void OutMember(){
         LocalDateTime now = LocalDateTime.now();
