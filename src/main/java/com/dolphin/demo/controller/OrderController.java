@@ -68,4 +68,9 @@ public class OrderController {
     public ResponseEntity<Boolean> updateState(@PathVariable Long id){
         return orderService.udateState(id);
     }
+
+    @GetMapping("order/mypage")
+    public ResponseEntity<List<OrderListResponseDto>> getMyOrder(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        return orderService.getMyOrderList(userDetails);
+    }
 }
