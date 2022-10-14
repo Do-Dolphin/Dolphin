@@ -70,6 +70,31 @@ public class OrderService {
     }
 
     //요청 리스트를 반환하는 메서드
+    public ResponseEntity<List<OrderListResponseDto>> getMyOrderList(UserDetailsImpl userDetails) {
+        if (userDetails == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
+        List<Order> orderList = orderRepository.findAllByMemberOrderByCreatedAtDesc(member);
+
+        List<OrderListResponseDto> orderResult = new ArrayList<>();
+        for (Order orders : orderList) {
+            OrderListResponseDto orderResponseDto = OrderListResponseDto.builder()
+                    .id(orders.getId())
+                    .nickname(orders.getMember().getNickname())
+                    .title(orders.getTitle())
+                    .createdAt(orders.getCreatedAt())
+                    .state(orders.isState())
+                    .build();
+            orderResult.add(orderResponseDto);
+        }
+
+        return ResponseEntity.ok().body(orderResult);
+    }
+
+    //요청 리스트를 반환하는 메서드
     public ResponseEntity<List<OrderListResponseDto>> getOrderList() {
 
         List<Order> orderList = orderRepository.findAllByOrderByStateAsc();
