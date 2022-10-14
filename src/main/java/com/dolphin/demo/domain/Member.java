@@ -40,4 +40,10 @@ public class Member {
         this.password = newPassword;
     }
 
+    public void OutMember(){
+        this.username = null;
+        this.password = null;
+        this.role = null;
+    }
+
 }

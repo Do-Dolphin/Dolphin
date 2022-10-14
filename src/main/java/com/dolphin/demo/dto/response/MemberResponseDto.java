@@ -1,5 +1,6 @@
 package com.dolphin.demo.dto.response;
 
+import com.dolphin.demo.domain.MemberRoleEnum;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,4 +9,5 @@ import lombok.Getter;
 public class MemberResponseDto {
     private String nickname;
     private String username;
+    private MemberRoleEnum role;
 }
