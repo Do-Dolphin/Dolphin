@@ -2,7 +2,7 @@ package com.dolphin.demo.repository;
 
 import com.dolphin.demo.dto.response.PlaceSearchDto;
 import com.dolphin.demo.dto.response.QPlaceSearchDto;
-import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -38,8 +38,6 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
                 .fetch();
-        System.out.println(areaCode);
-        System.out.println(sigunguCode);
 
         int totalSize = queryFactory
                 .selectFrom(place)
@@ -51,13 +49,17 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
         return new PageImpl<>(result, pageRequest, totalSize);
     }
 
+    // 키워드 검색 및 키워드 공백 제거
     private BooleanExpression titleContains(String keyword) {
+        // 검색어에서 공백 제거
         String notBlank = keyword.replaceAll(" ", "");
-        return ObjectUtils.isEmpty(keyword) ? null : place.title.containsIgnoreCase(keyword).or(place.title.containsIgnoreCase(notBlank));
+        // 여행지 title의 공백 제거
+        StringTemplate tit = Expressions.stringTemplate("REPLACE({0},' ','')", place.title);
+        return ObjectUtils.isEmpty(keyword) ? null : tit.containsIgnoreCase(keyword).or(tit.containsIgnoreCase(notBlank));
     }
 
+    // 지역선택 기능
     private BooleanExpression regionSelect(String areaCode, String sigunguCode) {
-//        return areaCode.equals("0") & sigunguCode.equals("0") ? null : place.areaCode.eq(areaCode).and(place.sigunguCode.eq(sigunguCode));
         if (areaCode.equals("0") & sigunguCode.equals("0")) return null;
         else if(!areaCode.equals("0") & sigunguCode.equals("0")) return place.areaCode.eq(areaCode);
         else return place.areaCode.eq(areaCode).and(place.sigunguCode.eq(sigunguCode));
