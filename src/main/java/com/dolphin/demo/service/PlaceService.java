@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -108,26 +109,20 @@ public class PlaceService {
         String area;
 
 
-        if (areaNum > 8) {
-            if (sigunguCode.equals("0"))
-                while (true) {
-                    sigunguNum = (int) (Math.random() * 31 + 1);
-                    if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaNum), String.valueOf(sigunguNum)))
-                        break;
-                }
-            else
-                sigunguNum = Integer.parseInt(sigunguCode);
-            for (String themeCode : themes) {
-                randomList.add(randomSigungu(String.valueOf(areaNum), String.valueOf(sigunguNum), themeCode, userDetails));
+        if (sigunguCode.equals("0"))
+            while (true) {
+                sigunguNum = (int) (Math.random() * 31 + 1);
+                if (placeRepository.existsByAreaCodeAndSigunguCode(String.valueOf(areaNum), String.valueOf(sigunguNum)))
+                    break;
             }
-            area = getArea(randomList.get(0), 1);
-        } else {
-            for (String themeCode : themes) {
-                randomList.add(randomArea(String.valueOf(areaNum), themeCode, userDetails));
-            }
-            area = getArea(randomList.get(0), 0);
-
+        else
+            sigunguNum = Integer.parseInt(sigunguCode);
+        for (String themeCode : themes) {
+            randomList.add(randomSigungu(String.valueOf(areaNum), String.valueOf(sigunguNum), themeCode, userDetails));
         }
+
+        area = getArea(randomList.get(0), 1);
+
 
 
         return ResponseEntity.ok(RandomPlaceResponseDto.builder()
@@ -137,33 +132,33 @@ public class PlaceService {
     }
 
 
-    // 광역시, 특별시에 해당하는 지역에서 해당하는 테마의 관광지 랜덤 추첨
-    public PlaceListResponseDto randomArea(String areaCode, String theme, UserDetailsImpl userDetails) {
-
-        List<Place> placeList = placeRepository.findAllByAreaCodeAndTheme(String.valueOf(areaCode), theme);
-
-        int index = (int) (Math.random() * placeList.size());
-        Place place = placeList.get(index);
-        PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
-        if (img != null)
-            return PlaceListResponseDto.builder()
-                    .id(place.getId())
-                    .title(place.getTitle())
-                    .star(place.getStar())
-                    .image(img.getImageUrl())
-                    .theme(place.getTheme())
-                    .state(getPlaceLikeState(place.getId(), userDetails))
-                    .build();
-        else
-            return PlaceListResponseDto.builder()
-                    .id(place.getId())
-                    .title(place.getTitle())
-                    .star(place.getStar())
-                    .theme(place.getTheme())
-                    .state(getPlaceLikeState(place.getId(), userDetails))
-                    .build();
-
-    }
+//    // 광역시, 특별시에 해당하는 지역에서 해당하는 테마의 관광지 랜덤 추첨
+//    public PlaceListResponseDto randomArea(String areaCode, String theme, UserDetailsImpl userDetails) {
+//
+//        List<Place> placeList = placeRepository.findAllByAreaCodeAndTheme(String.valueOf(areaCode), theme);
+//
+//        int index = (int) (Math.random() * placeList.size());
+//        Place place = placeList.get(index);
+//        PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
+//        if (img != null)
+//            return PlaceListResponseDto.builder()
+//                    .id(place.getId())
+//                    .title(place.getTitle())
+//                    .star(place.getStar())
+//                    .image(img.getImageUrl())
+//                    .theme(place.getTheme())
+//                    .state(getPlaceLikeState(place.getId(), userDetails))
+//                    .build();
+//        else
+//            return PlaceListResponseDto.builder()
+//                    .id(place.getId())
+//                    .title(place.getTitle())
+//                    .star(place.getStar())
+//                    .theme(place.getTheme())
+//                    .state(getPlaceLikeState(place.getId(), userDetails))
+//                    .build();
+//
+//    }
 
     /**
      * 랜덤으로 돌린 지역 이름을 주소에서 추출
@@ -530,7 +525,7 @@ public class PlaceService {
 
             conn.setRequestMethod("GET");
             conn.setDoOutput(true);
-            conn.setRequestProperty("Authorization", "KakaoAK "+ key);
+            conn.setRequestProperty("Authorization", "KakaoAK " + key);
 
             //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -544,7 +539,7 @@ public class PlaceService {
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(result);
             JSONArray addresses = (JSONArray) jsonObject.get("documents");
-            JSONObject adress = (JSONObject)addresses.get(0);
+            JSONObject adress = (JSONObject) addresses.get(0);
 
             coordinates[0] = adress.get("x").toString();
             coordinates[1] = adress.get("y").toString();
