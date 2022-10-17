@@ -28,6 +28,7 @@ public class CommentService {
     private final CommentImageRepository commentImageRepository;
     private final PlaceRepository placeRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
 
     // 여행지 상세페이지 후기 조회

@@ -468,19 +468,24 @@ public class PlaceService {
     }
 
     //사용자가 찜한 장소들의 리스트 반환
-    public ResponseEntity<List<PlaceLikeResponseDto>> getLikePlaceList(UserDetailsImpl userDetails) {
+    public ResponseEntity<List<PlaceLikeResponseDto>> getLikePlaceList(String areaCode, String sigunguCode, UserDetailsImpl userDetails) {
         if (userDetails == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
         if (member == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-
         List<Heart> hearts = heartRepository.findAllByMember(member);
-
         List<PlaceLikeResponseDto> responseDtoList = new ArrayList<>();
 
         for (Heart heart : hearts) {
+
             Place place = heart.getPlace();
+            if( (!sigunguCode.equals("0") && !sigunguCode.equals(place.getSigunguCode())) ||
+                    (!areaCode.equals("0") && !areaCode.equals(place.getAreaCode()))) {
+                continue;
+            }
+
+
             PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
             if (img != null)
                 responseDtoList.add(PlaceLikeResponseDto.builder()
