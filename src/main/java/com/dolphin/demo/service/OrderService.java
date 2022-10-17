@@ -6,6 +6,7 @@ import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.AddPlaceOrderRequestDto;
 import com.dolphin.demo.dto.request.OrderRequestDto;
+import com.dolphin.demo.dto.request.OrderStateRequestDto;
 import com.dolphin.demo.dto.response.OrderListResponseDto;
 import com.dolphin.demo.dto.response.OrderResponseDto;
 import com.dolphin.demo.exception.CustomException;
@@ -38,6 +39,7 @@ public class OrderService {
     private final AmazonS3Service amazonS3Service;
     private final OrderImageRepository orderImageRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     private static final Logger logger = LoggerFactory.getLogger("오더 삭제 로그");
 
@@ -212,13 +214,18 @@ public class OrderService {
 
     //완료한 데이터를 true 상태로 업데이트 해주는 메서드
     @Transactional
-    public ResponseEntity<Boolean> udateState(Long id) {
+    public ResponseEntity<Boolean> udateState(OrderStateRequestDto requestDto) {
 
-        Order order = orderRepository.findById(id).orElse(null);
-
+        Order order = orderRepository.findById(requestDto.getId()).orElse(null);
         if(order == null)
             throw  new CustomException(ErrorCode.NOT_FOUND_ORDER);
 
+        Member member = memberRepository.findByUsername(requestDto.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
+
+        notificationService.send(member, requestDto.getContent());
         order.updateState(true);
 
         return ResponseEntity.ok().body(order.isState());

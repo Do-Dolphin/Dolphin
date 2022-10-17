@@ -3,6 +3,7 @@ package com.dolphin.demo.controller;
 import com.dolphin.demo.dto.request.AddPlaceOrderRequestDto;
 import com.dolphin.demo.dto.request.OrderRequestDto;
 import com.dolphin.demo.dto.request.ImageRequestDto;
+import com.dolphin.demo.dto.request.OrderStateRequestDto;
 import com.dolphin.demo.dto.response.OrderListResponseDto;
 import com.dolphin.demo.dto.response.OrderResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
@@ -64,9 +65,9 @@ public class OrderController {
     }
 
     //    @Secured("ADMIN")
-    @PostMapping("/order/state/{id}")
-    public ResponseEntity<Boolean> updateState(@PathVariable Long id){
-        return orderService.udateState(id);
+    @PostMapping("/order/state")
+    public ResponseEntity<Boolean> updateState(@RequestBody OrderStateRequestDto requestDto){
+        return orderService.udateState(requestDto);
     }
 
     @GetMapping("order/mypage")
