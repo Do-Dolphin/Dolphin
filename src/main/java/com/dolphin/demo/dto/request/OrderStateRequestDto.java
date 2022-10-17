@@ -12,6 +12,6 @@ public class OrderStateRequestDto {
 
     private Long id;
     private String username;
-    private String content;
+    private String answer;
 
 }

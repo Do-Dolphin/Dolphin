@@ -27,6 +27,9 @@ public class Order extends Timestamped {
     private String content;
 
     @Column(nullable = false)
+    private String answer;
+
+    @Column(nullable = false)
     private boolean state;
 
     private Long placeId;
@@ -38,7 +41,8 @@ public class Order extends Timestamped {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    public void updateState(boolean state){
+    public void updateState(boolean state, String answer){
         this.state = state;
+        this.answer = answer;
     }
 }
