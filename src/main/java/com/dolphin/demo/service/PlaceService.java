@@ -181,7 +181,8 @@ public class PlaceService {
     public PlaceListResponseDto randomSigungu(String areaCode, String sigunguCode, String theme, UserDetailsImpl userDetails) {
 
         List<Place> placeList = placeRepository.findAllByAreaCodeAndSigunguCodeAndTheme(areaCode, sigunguCode, theme);
-        System.out.println(areaCode + " " + sigunguCode);
+        if(placeList.isEmpty())
+            return null;
         int index = (int) (Math.random() * placeList.size());
         Place place = placeList.get(index);
 
