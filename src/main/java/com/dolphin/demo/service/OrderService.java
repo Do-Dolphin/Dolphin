@@ -65,6 +65,7 @@ public class OrderService {
                     .title(order.getTitle())
                     .state(order.isState())
                     .type(order.getType())
+                    .answer(order.getAnswer())
                     .content(order.getContent())
                     .imageList(imageList)
                     .createdAt(order.getCreatedAt())
@@ -129,6 +130,7 @@ public class OrderService {
                         .type(orderRequestDto.getType())
                         .member(member)
                         .state(false)
+                        .answer("")
                         .placeId(place_id)
                         .build();
         orderRepository.save(order);
@@ -179,6 +181,7 @@ public class OrderService {
                 .content(content.toString())
                 .title(placeRequestDto.getTitle()+" 추가 요청")
                 .type(placeRequestDto.getType())
+                .answer("")
                 .member(member)
                 .state(false)
                 .build();
@@ -225,8 +228,8 @@ public class OrderService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
 
-        notificationService.send(member, requestDto.getContent());
-        order.updateState(true);
+        order.updateState(true, requestDto.getAnswer());
+        notificationService.send(member, requestDto.getAnswer());
 
         return ResponseEntity.ok().body(order.isState());
     }
@@ -252,6 +255,7 @@ public class OrderService {
                 .type("추가")
                 .member(member)
                 .state(false)
+                .answer("")
                 .build();
         orderRepository.save(order);
 

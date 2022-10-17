@@ -19,9 +19,11 @@ public class OrderResponseDto {
     private Long place_id;
     private String type;
     private String nickname;
+    private String username;
     private String title;
     private String content;
     private boolean state;
+    private String answer;
     private List<String> imageList;
     private LocalDateTime createdAt;
 
