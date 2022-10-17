@@ -54,7 +54,7 @@ public class MemberController {
     }
 
     // 만료된 access token 재 발급
-    @PostMapping(value = "/api/member/retoken")
+    @PostMapping("/api/member/retoken")
     public ResponseEntity<String> reToken(
             @RequestHeader(value = "Authorization") String accessToken,
             @RequestHeader(value = "RefreshToken") String refreshToken) {
