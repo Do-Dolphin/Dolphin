@@ -1,4 +1,4 @@
-package com.dolphin.demo.repository;
+package com.dolphin.demo.dto.repository;
 
 import com.dolphin.demo.domain.CommentImage;
 import org.springframework.data.jpa.repository.JpaRepository;

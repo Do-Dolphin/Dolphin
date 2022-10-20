@@ -1,7 +1,7 @@
 package com.dolphin.demo.jwt;
 
 import com.dolphin.demo.domain.Member;
-import com.dolphin.demo.repository.MemberRepository;
+import com.dolphin.demo.dto.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

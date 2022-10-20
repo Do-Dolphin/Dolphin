@@ -2,8 +2,8 @@ package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.domain.PlaceImage;
-import com.dolphin.demo.repository.PlaceImageRepository;
-import com.dolphin.demo.repository.PlaceRepository;
+import com.dolphin.demo.dto.repository.PlaceImageRepository;
+import com.dolphin.demo.dto.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
