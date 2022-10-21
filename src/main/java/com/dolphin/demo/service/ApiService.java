@@ -87,7 +87,6 @@ public class ApiService {
     @Scheduled(cron = "0 0 2 12 * ?")
     public void addImage() {
         content(apiKey);
-
         add(apiKey);
     }
 
@@ -136,7 +135,6 @@ public class ApiService {
 
 
     @Scheduled(cron = "0 0 2 12 * ?")
-    @Transactional
     public void updatePlace() {
         String[] themes = {"12", "14", "28", "39"};
         for (String theme : themes) {
