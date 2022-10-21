@@ -38,7 +38,7 @@ public class NotificationController {
     /**
      * 알림 읽음 상태 변경
      */
-    @PatchMapping("/api/auth/notice/read")
+    @PatchMapping("/api/auth/notice/read/{id}")
     public ResponseEntity<Void> readNotification(@PathVariable Long id) {
         notificationService.readNotification(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
