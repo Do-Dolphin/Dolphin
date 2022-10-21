@@ -40,7 +40,7 @@ public class NotificationController {
      */
     @PatchMapping("/api/auth/notice/read")
     public ResponseEntity<Void> readNotification(@PathVariable Long id) {
-        notificationService.readNotification(userDetails.getMember().getId());
+        notificationService.readNotification();
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
