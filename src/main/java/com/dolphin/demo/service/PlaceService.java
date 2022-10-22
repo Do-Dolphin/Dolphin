@@ -132,34 +132,6 @@ public class PlaceService {
     }
 
 
-//    // 광역시, 특별시에 해당하는 지역에서 해당하는 테마의 관광지 랜덤 추첨
-//    public PlaceListResponseDto randomArea(String areaCode, String theme, UserDetailsImpl userDetails) {
-//
-//        List<Place> placeList = placeRepository.findAllByAreaCodeAndTheme(String.valueOf(areaCode), theme);
-//
-//        int index = (int) (Math.random() * placeList.size());
-//        Place place = placeList.get(index);
-//        PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
-//        if (img != null)
-//            return PlaceListResponseDto.builder()
-//                    .id(place.getId())
-//                    .title(place.getTitle())
-//                    .star(place.getStar())
-//                    .image(img.getImageUrl())
-//                    .theme(place.getTheme())
-//                    .state(getPlaceLikeState(place.getId(), userDetails))
-//                    .build();
-//        else
-//            return PlaceListResponseDto.builder()
-//                    .id(place.getId())
-//                    .title(place.getTitle())
-//                    .star(place.getStar())
-//                    .theme(place.getTheme())
-//                    .state(getPlaceLikeState(place.getId(), userDetails))
-//                    .build();
-//
-//    }
-
     /**
      * 랜덤으로 돌린 지역 이름을 주소에서 추출
      * n은 0 또는 1이다.
@@ -287,9 +259,12 @@ public class PlaceService {
     //장소 생성
     @Transactional
     public ResponseEntity<PlaceResponseDto> createPlace(PlaceRequestDto requestDto, List<MultipartFile> multipartFile) throws IOException {
-        Long id = placeRepository.findTopByOrderByIdDesc().getId();
-        if (id < 5000000)
+        Place placeTop = placeRepository.findTopByOrderByIdDesc();
+        Long id;
+        if (placeTop == null || placeTop.getId() < 5000000)
             id = 4999999L;
+        else
+            id = placeTop.getId();
         String[] coordinates = getCoordinates(requestDto.getAddress());
         Place place = Place.builder()
                 .id(id + 1)
