@@ -15,14 +15,15 @@ public enum ErrorCode {
     // 401 Unauthorized.
     UNAUTHORIZED_OUT(HttpStatus.UNAUTHORIZED, "401", "회원탈퇴 후 7일이 지나지 않았습니다."),
     UNAUTHORIZED_LOGIN(HttpStatus.UNAUTHORIZED, "401", "로그인이 필요합니다."),
-    DO_NOT_MATCH_USER(HttpStatus.UNAUTHORIZED, "401", "작성자만 수정, 삭제를 할 수 있습니다."),
+    DO_NOT_MATCH_USER(HttpStatus.UNAUTHORIZED, "401", "작성자가 아닙니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "401", "refresh token 기간이 만료 되었습니다."),
 
 
 
     // 404 Not Fount
     NOT_FOUND_PLACE(HttpStatus.NOT_FOUND, "404", "존재하는 여행지가 아닙니다."),
-    NOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "404", "후기가 존재하지 않습니다."),
+    NOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "404", "존재하지 않는 후기입니다."),
+    NOT_FOUND_COURSE(HttpStatus.NOT_FOUND, "404", "존재하지 않는 코스입니다."),
     NOT_FOUND_ORDER(HttpStatus.NOT_FOUND, "404", "존재하지 않는 요청입니다."),
     NOT_FOUND_EVENT(HttpStatus.NOT_FOUND, "404", "존재하지 않는 행사입니다."),
     NOT_FOUND_TOKEN(HttpStatus.NOT_FOUND, "404", "토큰 정보가 없습니다."),
