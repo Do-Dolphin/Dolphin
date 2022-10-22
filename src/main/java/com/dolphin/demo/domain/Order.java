@@ -34,8 +34,8 @@ public class Order extends Timestamped {
 
     private Long placeId;
 
-    @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<CommentImage> imageList;
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<OrderImage> imageList;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")

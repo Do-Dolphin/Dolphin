@@ -111,11 +111,7 @@ public class MemberService {
 
     // access token 만료시 재발급
     @Transactional
-    public ResponseEntity<String> reToken(String accessToken, String refreshToken) {
-        // accessToken 만료 기간 확인
-        if (jwtTokenProvider.validateToken(accessToken)) {
-            throw new CustomException(ErrorCode.BAD_REQUEST_TOKEN);
-        }
+    public ResponseEntity<String> reToken(String refreshToken) {
 
         // RefreshToken 유효성 검사
         String token = refreshToken.replace("Bearer ", "");
