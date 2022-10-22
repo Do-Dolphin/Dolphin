@@ -17,6 +17,6 @@ public class CourseResponseDto {
 
     private Long id;
     private String name;
-    private List<CoursePlaceResponseDto> placeList;
+    private List<CoursePlaceResponseDto> data;
 
 }

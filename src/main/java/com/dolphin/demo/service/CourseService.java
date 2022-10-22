@@ -82,7 +82,7 @@ public class CourseService {
         return ResponseEntity.ok().body(CourseResponseDto.builder()
                 .id(course.getId())
                 .name(course.getName())
-                .placeList(responseDtoList)
+                .data(responseDtoList)
                 .build());
     }
 
@@ -136,7 +136,7 @@ public class CourseService {
         return ResponseEntity.ok().body(CourseResponseDto.builder()
                 .id(course.getId())
                 .name(course.getName())
-                .placeList(responseDtoList)
+                .data(responseDtoList)
                 .build());
     }
 
@@ -190,7 +190,7 @@ public class CourseService {
         return ResponseEntity.ok().body(CourseResponseDto.builder()
                 .id(course.getId())
                 .name(course.getName())
-                .placeList(responseDtoList)
+                .data(responseDtoList)
                 .build());
     }
 
