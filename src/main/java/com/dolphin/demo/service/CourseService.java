@@ -11,9 +11,10 @@ import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.geolatte.geom.M;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +84,7 @@ public class CourseService {
                 .build());
     }
 
+    @Transactional
     public ResponseEntity<CourseResponseDto> creatCourse(UserDetailsImpl userDetails, CourseRequestDto requestDto) {
 
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
@@ -138,6 +140,7 @@ public class CourseService {
 
 
 
+    @Transactional
     public ResponseEntity<CourseResponseDto> addCoursePlace(UserDetailsImpl userDetails, List<CourseDataRequestDto> requestDtos, Long id) {
 
         Course course = courseRepository.findById(id).orElse(null);
@@ -187,11 +190,11 @@ public class CourseService {
                 .build());
     }
 
+    @Transactional
     public ResponseEntity<String> deleteCourse(UserDetailsImpl userDetails, Long id) {
 
 
         Course course = courseRepository.findById(id).orElse(null);
-
         if(course == null)
             throw new CustomException(ErrorCode.NOT_FOUND_COURSE);
 
@@ -201,6 +204,63 @@ public class CourseService {
 
         return ResponseEntity.ok().body("delete course: "+id);
     }
+
+    @Transactional
+    public ResponseEntity<CourseResponseDto> updateCourse(UserDetailsImpl userDetails, CourseRequestDto requestDto, Long id) {
+
+        Course course = courseRepository.findById(id).orElse(null);
+        if(course == null)
+            throw new CustomException(ErrorCode.NOT_FOUND_COURSE);
+
+        isWriter(userDetails, course.getMember());
+        course.updateName(requestDto.getName());
+
+
+        List<CourseItem> courseItems = itemRepository.findAllByCourseId(course.getId());
+        itemRepository.deleteAll(courseItems);
+
+        courseItems.clear();
+
+        for (CourseDataRequestDto dto: requestDto.getData()) {
+            Place place = placeRepository.findById(dto.getPlaceId()).orElse(null);
+            if(place == null)
+                throw new CustomException(ErrorCode.NOT_FOUND_PLACE);
+            courseItems.add(CourseItem.builder()
+                    .course(course)
+                    .place(place)
+                    .build());
+        }
+
+        itemRepository.saveAll(courseItems);
+
+        List<CoursePlaceResponseDto> responseDtoList = new ArrayList<>();
+
+        for (CourseItem item:courseItems) {
+            Place place = item.getPlace();
+            PlaceImage img = imageRepository.findFirstByPlace(place).orElse(null);
+            String url = null;
+            if(img != null)
+                url = img.getImageUrl();
+            responseDtoList.add(CoursePlaceResponseDto.builder()
+                    .id(place.getId())
+                    .title(place.getTitle())
+                    .star(place.getStar())
+                    .theme(place.getTheme())
+                    .image(url)
+                    .adress(place.getAddress())
+                    .mapX(place.getMapX())
+                    .mapY(place.getMapY())
+                    .build());
+        }
+
+
+        return ResponseEntity.ok().body(CourseResponseDto.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .data(responseDtoList)
+                .build());
+    }
+
 
     public Member isWriter(UserDetailsImpl userDetails, Member writer) {
             Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
