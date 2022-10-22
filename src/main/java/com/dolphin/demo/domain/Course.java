@@ -31,4 +31,8 @@ public class Course {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    public void updateName(String name){
+        this.name = name;
+    }
+
 }

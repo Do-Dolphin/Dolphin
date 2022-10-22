@@ -63,15 +63,16 @@ public class CourseController {
 
     @DeleteMapping("/course/{id}")
     public ResponseEntity<String> deleteCourse(@PathVariable Long id,
-                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
+                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return courseService.deleteCourse(userDetails, id);
     }
 
     @PutMapping("/course/{id}")
-    public ResponseEntity<String> updateCourse(@PathVariable Long id,
-                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable Long id,
+                                               @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                               @RequestBody CourseRequestDto courseRequestDto) {
 
-        return courseService.deleteCourse(userDetails, id);
+        return courseService.updateCourse(userDetails,courseRequestDto, id);
     }
 }
