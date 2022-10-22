@@ -11,7 +11,6 @@ import com.dolphin.demo.dto.response.CommentResponseDto;
 import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
-import com.dolphin.demo.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
