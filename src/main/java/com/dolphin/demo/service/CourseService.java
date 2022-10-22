@@ -11,6 +11,7 @@ import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.geolatte.geom.M;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -29,8 +30,7 @@ public class CourseService {
 
 
     public ResponseEntity<List<CourseListResponseDto>> getCourseList(UserDetailsImpl userDetails) {
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
         if (member == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
@@ -48,15 +48,12 @@ public class CourseService {
 
     //코스 조회하는 메서드
     public ResponseEntity<CourseResponseDto> getCourse(UserDetailsImpl userDetails, Long id) {
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
-        if (member == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
         Course course = courseRepository.findById(id).orElse(null);
         if(course == null)
             throw new CustomException(ErrorCode.NOT_FOUND_COURSE);
+
+        Member member = isWriter(userDetails, course.getMember());
 
         List<CourseItem> courseItems = itemRepository.findAllByCourseId(course.getId());
         List<CoursePlaceResponseDto> responseDtoList = new ArrayList<>();
@@ -87,8 +84,7 @@ public class CourseService {
     }
 
     public ResponseEntity<CourseResponseDto> creatCourse(UserDetailsImpl userDetails, CourseRequestDto requestDto) {
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
         if (member == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
@@ -143,15 +139,12 @@ public class CourseService {
 
 
     public ResponseEntity<CourseResponseDto> addCoursePlace(UserDetailsImpl userDetails, List<CourseDataRequestDto> requestDtos, Long id) {
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
-        if (member == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
         Course course = courseRepository.findById(id).orElse(null);
         if(course == null)
             throw new CustomException(ErrorCode.NOT_FOUND_COURSE);
+
+        Member member = isWriter(userDetails, course.getMember());
 
         List<CourseItem> courseItems = itemRepository.findAllByCourseId(id);
         for (CourseDataRequestDto dto: requestDtos) {
@@ -195,22 +188,28 @@ public class CourseService {
     }
 
     public ResponseEntity<String> deleteCourse(UserDetailsImpl userDetails, Long id) {
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
-        if (member == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
 
         Course course = courseRepository.findById(id).orElse(null);
+
         if(course == null)
             throw new CustomException(ErrorCode.NOT_FOUND_COURSE);
 
-        if(!course.getMember().getUsername().equals(member.getUsername()))
-            throw new CustomException(ErrorCode.DO_NOT_MATCH_USER);
+        isWriter(userDetails, course.getMember());
 
         courseRepository.delete(course);
 
         return ResponseEntity.ok().body("delete course: "+id);
     }
 
+    public Member isWriter(UserDetailsImpl userDetails, Member writer) {
+            Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+            if (member == null)
+                throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
+            if(!member.getUsername().equals(writer.getUsername()))
+                throw new CustomException(ErrorCode.DO_NOT_MATCH_USER);
+            return member;
+
+    }
 }

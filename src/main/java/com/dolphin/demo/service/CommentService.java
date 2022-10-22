@@ -74,8 +74,6 @@ public class CommentService {
     public ResponseEntity<CommentResponseDto> createComment(Long place_id, CommentRequestDto commentRequestDto, List<MultipartFile> multipartFile, UserDetailsImpl userDetails) throws IOException {
 
         // 로그인한 회원인지 여부 검증
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
         if (member == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
@@ -127,21 +125,13 @@ public class CommentService {
     // 후기 수정하기
     public ResponseEntity<CommentResponseDto> updateComment(Long comment_id, ImageRequestDto imageRequestDto, List<MultipartFile> multipartFile, UserDetailsImpl userDetails) throws IOException {
 
-        // 로그인한 회원인지 여부 검증
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
-        if (member == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(comment_id)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_COMMENT));
 
         // 작성자가 맞는지 여부 검증
-        if(!(comment.getMember().getId().equals(member.getId()))) {
-            throw new CustomException(DO_NOT_MATCH_USER);
-        }
+        Member member = isWriter(userDetails, comment.getMember());
 
 
         // 해당 후기의 모든 이미지 불러오기
@@ -234,21 +224,12 @@ public class CommentService {
     // 후기 삭제하기
     public ResponseEntity<Long> deleteComment(Long id, UserDetailsImpl userDetails) throws IOException {
 
-        // 로그인한 회원인지 여부 검증
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
-        if (member == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
-
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_COMMENT));
 
         // 작성자가 맞는지 여부 검증
-        if(!(comment.getMember().getId().equals(member.getId()))) {
-            throw new CustomException(DO_NOT_MATCH_USER);
-        }
+        Member member = isWriter(userDetails, comment.getMember());
 
 
         List<CommentImage> image = commentImageRepository.findAllByCommentId(id);
@@ -269,8 +250,6 @@ public class CommentService {
     public ResponseEntity<List<CommentResponseDto>> getMyCommentList(UserDetailsImpl userDetails) {
 
         // 로그인한 회원인지 여부 검증
-        if (userDetails == null)
-            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
         Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
         if (member == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
@@ -308,6 +287,17 @@ public class CommentService {
         }
 
         return ResponseEntity.ok().body(commentResult);
+    }
+
+    public Member isWriter(UserDetailsImpl userDetails, Member writer) {
+        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+        if (member == null)
+            throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
+
+        if(!member.getUsername().equals(writer.getUsername()))
+            throw new CustomException(ErrorCode.DO_NOT_MATCH_USER);
+        return member;
+
     }
 
 }
