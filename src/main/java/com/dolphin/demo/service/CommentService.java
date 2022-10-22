@@ -133,9 +133,8 @@ public class CommentService {
         Comment comment = commentRepository.findById(comment_id)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_COMMENT));
 
-        // 작성자가 맞는지 여부 검증
+        // 작성자가 맞는지 여부 검증 or 관리자인지 여부 검증
         Member member = isWriterOrAdmin(userDetails, comment.getMember());
-
 
         // 해당 후기의 모든 이미지 불러오기
         List<CommentImage> image = commentImageRepository.findAllByCommentId(comment_id);
@@ -234,7 +233,6 @@ public class CommentService {
         // 작성자가 맞는지 여부 검증 or 관리자인지 여부 검증
         isWriterOrAdmin(userDetails, comment.getMember());
 
-
         List<CommentImage> image = commentImageRepository.findAllByCommentId(id);
 
         // 저장된 이미지가 있으면 S3 저장소에 있는 이미지 삭제하기
@@ -301,7 +299,6 @@ public class CommentService {
         if(!member.getUsername().equals(writer.getUsername()) && !member.getRole().equals(MemberRoleEnum.ADMIN))
             throw new CustomException(ErrorCode.DO_NOT_MATCH_USER);
         return member;
-
     }
 
 }
