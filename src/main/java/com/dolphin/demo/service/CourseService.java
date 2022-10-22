@@ -1,6 +1,9 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.*;
+import com.dolphin.demo.dto.repository.MemberRepository;
+import com.dolphin.demo.dto.repository.PlaceImageRepository;
+import com.dolphin.demo.dto.repository.PlaceRepository;
 import com.dolphin.demo.dto.request.CourseDataRequestDto;
 import com.dolphin.demo.dto.request.CourseRequestDto;
 import com.dolphin.demo.dto.response.CourseListResponseDto;
@@ -9,7 +12,6 @@ import com.dolphin.demo.dto.response.CourseResponseDto;
 import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
-import com.dolphin.demo.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -26,8 +28,8 @@ public class CourseService {
     private final PlaceRepository placeRepository;
     private final PlaceImageRepository imageRepository;
     private final MemberRepository memberRepository;
-    private final CourseRepository courseRepository;
-    private final CourseItemRepository itemRepository;
+    private final com.dolphin.demo.repository.CourseRepository courseRepository;
+    private final com.dolphin.demo.repository.CourseItemRepository itemRepository;
 
 
     public ResponseEntity<List<CourseListResponseDto>> getCourseList(UserDetailsImpl userDetails) {

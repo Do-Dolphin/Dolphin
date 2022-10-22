@@ -4,26 +4,23 @@ import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.Notification;
 import com.dolphin.demo.dto.response.NotificationResponse;
 import com.dolphin.demo.dto.response.NotificationsResponse;
-import com.dolphin.demo.repository.EmitterRepository;
-import com.dolphin.demo.repository.NotificationRepository;
+import com.dolphin.demo.dto.repository.EmitterRepository;
+import com.dolphin.demo.dto.repository.NotificationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
     private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
-    private static final Map<String, SseEmitter> CLIENTS = new ConcurrentHashMap<>();
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
 
     private final EmitterRepository emitterRepository;
@@ -41,9 +38,9 @@ public class NotificationService {
         emitter.onCompletion(() -> emitterRepository.deleteById(id));
         emitter.onTimeout(() -> emitterRepository.deleteById(id));
 
-//        // 503 에러를 방지하기 위한 더미 이벤트 전송
-//        sendToClient(emitter, id, "EventStream Created. [userId=" + memberid + "]");
-        sendDummyAlert(emitter, id);
+        // 503 에러를 방지하기 위한 더미 이벤트 전송
+        sendToClient(emitter, id, "EventStream Created. [userId=" + memberid + "]");
+
         // 클라이언트가 미수신한 Event 목록이 존재할 경우 전송하여 Event 유실을 예방
         if (!lastEventId.isEmpty()) {
             Map<String, Object> events = emitterRepository.findAllEventCacheStartWithId(String.valueOf(memberid));
@@ -51,18 +48,8 @@ public class NotificationService {
                     .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
                     .forEach(entry -> sendToClient(emitter, entry.getKey(), entry.getValue()));
         }
-        return emitter;
-    }
 
-    // 더미데이터 / 입장 알림 보내기
-    private void sendDummyAlert(SseEmitter emitter, String emitterId) {
-        try {
-            emitter.send("입장", MediaType.APPLICATION_JSON);
-        }
-        catch (IOException e) {
-            log.info(e.toString());
-            emitterRepository.deleteById(emitterId);
-        }
+        return emitter;
     }
 
     private void sendToClient(SseEmitter emitter, String id, Object data) {
@@ -76,7 +63,6 @@ public class NotificationService {
             log.error("SSE 연결 오류!", exception);
         }
     }
-
 
     @Transactional
     public void send(Member receiver, String content) {

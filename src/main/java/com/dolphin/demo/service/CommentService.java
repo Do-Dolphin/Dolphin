@@ -1,13 +1,16 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.*;
+import com.dolphin.demo.dto.repository.CommentImageRepository;
+import com.dolphin.demo.dto.repository.CommentRepository;
+import com.dolphin.demo.dto.repository.MemberRepository;
+import com.dolphin.demo.dto.repository.PlaceRepository;
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.request.ImageRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
 import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
-import com.dolphin.demo.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -130,9 +133,8 @@ public class CommentService {
         Comment comment = commentRepository.findById(comment_id)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_COMMENT));
 
-        // 작성자가 맞는지 여부 검증
-        Member member = isWriter(userDetails, comment.getMember());
-
+        // 작성자가 맞는지 여부 검증 or 관리자인지 여부 검증
+        Member member = isWriterOrAdmin(userDetails, comment.getMember());
 
         // 해당 후기의 모든 이미지 불러오기
         List<CommentImage> image = commentImageRepository.findAllByCommentId(comment_id);
@@ -222,15 +224,14 @@ public class CommentService {
     }
 
     // 후기 삭제하기
-    public ResponseEntity<Long> deleteComment(Long id, UserDetailsImpl userDetails) throws IOException {
+    public ResponseEntity<Long> deleteComment(Long id, UserDetailsImpl userDetails) {
 
         // 후기 존재 여부 검증
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_COMMENT));
 
-        // 작성자가 맞는지 여부 검증
-        Member member = isWriter(userDetails, comment.getMember());
-
+        // 작성자가 맞는지 여부 검증 or 관리자인지 여부 검증
+        isWriterOrAdmin(userDetails, comment.getMember());
 
         List<CommentImage> image = commentImageRepository.findAllByCommentId(id);
 
@@ -289,15 +290,15 @@ public class CommentService {
         return ResponseEntity.ok().body(commentResult);
     }
 
-    public Member isWriter(UserDetailsImpl userDetails, Member writer) {
-        Member member = memberRepository.findByUsername(userDetails.getUsername()).orElse(null);
+    public Member isWriterOrAdmin(UserDetailsImpl userDetails, Member writer) {
+        Member member = memberRepository.findByUsernameAndRole(userDetails.getUsername(), userDetails.getMember().getRole()).orElse(null);
+
         if (member == null)
             throw new CustomException(ErrorCode.UNAUTHORIZED_LOGIN);
 
-        if(!member.getUsername().equals(writer.getUsername()))
+        if(!member.getUsername().equals(writer.getUsername()) && !member.getRole().equals(MemberRoleEnum.ADMIN))
             throw new CustomException(ErrorCode.DO_NOT_MATCH_USER);
         return member;
-
     }
 
 }
