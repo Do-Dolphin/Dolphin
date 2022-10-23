@@ -87,8 +87,10 @@ public class PlaceController {
     }
 
     @GetMapping("api/auth/place/mypage")
-    public ResponseEntity<List<PlaceLikeResponseDto>> getLikePlaceList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return placeService.getLikePlaceList(userDetails);
+    public ResponseEntity<List<PlaceLikeResponseDto>> getLikePlaceList(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                       @RequestParam(value = "areaCode") String areaCode,
+                                                                       @RequestParam(value = "sigunguCode") String sigunguCode) {
+        return placeService.getLikePlaceList(areaCode, sigunguCode, userDetails);
     }
 
 }

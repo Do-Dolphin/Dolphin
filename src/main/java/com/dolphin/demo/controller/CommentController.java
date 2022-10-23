@@ -56,7 +56,7 @@ public class CommentController {
     // 후기 삭제
     @DeleteMapping("/auth/comment/{id}")
     public ResponseEntity<String> deleteComment(@PathVariable Long id,
-                                                @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
+                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         commentService.deleteComment(id, userDetails);
 

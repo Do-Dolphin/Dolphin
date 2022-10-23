@@ -11,31 +11,20 @@ import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.JwtTokenProvider;
-import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.OutMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.mail.internet.MimeMessage;
-import javax.validation.Valid;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -55,13 +44,13 @@ public class MemberService {
     @Transactional
     public ResponseEntity<MemberResponseDto> signup(SignupRequestDto requestDto) {
         if(outMemberRepository.existsByUsername(requestDto.getUsername())){
-            throw new IllegalArgumentException("회원탈퇴 후 7일이 지나지 않았습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED_OUT);
         }
         if (!requestDto.getPassword().equals(requestDto.getPasswordConfirm())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new CustomException(ErrorCode.BAD_REQUEST_PASSWORD);
         }
         if (memberRepository.existsByUsername((requestDto.getUsername()))) {
-            throw new IllegalArgumentException("아이디 중복체크는 필수입니다.");
+            throw new CustomException(ErrorCode.BAD_REQUEST_EMAIL);
         }
 
         String nickname = rendomNickname();
@@ -100,7 +89,7 @@ public class MemberService {
         );
 
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("비밀번호를 확인해 주세요");
+            throw new CustomException(ErrorCode.BAD_REQUEST_PASSWORD);
         }
 
         //토큰 만들기
@@ -122,22 +111,18 @@ public class MemberService {
 
     // access token 만료시 재발급
     @Transactional
-    public ResponseEntity<String> reToken(String accessToken, String refreshToken) {
-        // accessToken 만료 기간 확인
-        if (jwtTokenProvider.validateToken(accessToken)) {
-            throw new IllegalArgumentException("토큰 기간이 만료되지 않아서 갱신되지 않습니다");
-        }
+    public ResponseEntity<String> reToken(String refreshToken) {
 
         // RefreshToken 유효성 검사
         String token = refreshToken.replace("Bearer ", "");
         if (!jwtTokenProvider.validateToken(token)) {
-            throw new IllegalArgumentException("refresh token 기간이 만료 되었습니다.");
+            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
         }
 
         // Redis에서 refreshToken 유저 정보 꺼내기
         String username = redisService.getValues(token);
         if (username == null) {
-            throw new IllegalArgumentException("토큰 정보가 없습니다.");
+            throw new CustomException(ErrorCode.NOT_FOUND_TOKEN);
         }
 
         // 토큰 재발행

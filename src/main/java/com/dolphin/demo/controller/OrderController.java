@@ -3,12 +3,14 @@ package com.dolphin.demo.controller;
 import com.dolphin.demo.dto.request.AddPlaceOrderRequestDto;
 import com.dolphin.demo.dto.request.OrderRequestDto;
 import com.dolphin.demo.dto.request.ImageRequestDto;
+import com.dolphin.demo.dto.request.OrderStateRequestDto;
 import com.dolphin.demo.dto.response.OrderListResponseDto;
 import com.dolphin.demo.dto.response.OrderResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +28,7 @@ public class OrderController {
     private final OrderService orderService;
 
     //요청 목록 조회
-    //    @Secured("ADMIN")
+    @Secured("ROLE_ADMIN")
     @GetMapping("/order")
     public ResponseEntity<List<OrderListResponseDto>> getOrderList() {
 
@@ -34,7 +36,6 @@ public class OrderController {
     }
 
     //요청 상세 조회
-    //    @Secured("ADMIN")
     @GetMapping("/order/{id}")
     public ResponseEntity<OrderResponseDto> getOrder(@PathVariable Long id) {
 
@@ -63,9 +64,14 @@ public class OrderController {
         return orderService.createAddOrder(requestDto, multipartFile, userDetails);
     }
 
-    //    @Secured("ADMIN")
-    @PutMapping("/order/{id}")
-    public ResponseEntity<Boolean> updateState(@PathVariable Long id){
-        return orderService.udateState(id);
+    @Secured("ROLE_ADMIN")
+    @PostMapping("/order/state")
+    public ResponseEntity<Boolean> updateState(@RequestBody OrderStateRequestDto requestDto){
+        return orderService.udateState(requestDto);
+    }
+
+    @GetMapping("order/mypage")
+    public ResponseEntity<List<OrderListResponseDto>> getMyOrder(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        return orderService.getMyOrderList(userDetails);
     }
 }

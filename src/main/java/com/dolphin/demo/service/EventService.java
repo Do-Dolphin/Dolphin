@@ -3,6 +3,8 @@ package com.dolphin.demo.service;
 import com.dolphin.demo.domain.Event;
 import com.dolphin.demo.dto.request.EventRequestDto;
 import com.dolphin.demo.dto.response.EventResponseDto;
+import com.dolphin.demo.exception.CustomException;
+import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +52,7 @@ public class EventService {
     public ResponseEntity<EventResponseDto> updateEvent(Long event_id, EventRequestDto eventRequestDto, MultipartFile multipartFile) throws IOException {
 
         Event event = eventRepository.findById(event_id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 행사입니다"));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_EVENT));
 
         // 관리자가 맞는지 여부 검증 추가 예정
 
@@ -94,7 +96,7 @@ public class EventService {
         // 관리자 여부 검증 추가 예정
 
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 행사입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_EVENT));
 
         if (event.getImageUrl() != null) {
             amazonS3Service.deleteFile(event.getImageUrl().substring(event.getImageUrl().lastIndexOf("/") + 1));

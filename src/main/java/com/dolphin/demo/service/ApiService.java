@@ -28,20 +28,9 @@ public class ApiService {
     private final PlaceRepository placeRepository;
     private final PlaceImageRepository imageRepository;
     private final PlaceService placeService;
+    private final OrderService orderService;
     @Value("${restAPI.key}")
     String apiKey;
-    @Value("${restAPI.key2}")
-    String apiKey2;
-    @Value("${restAPI.key3}")
-    String apiKey3;
-    @Value("${restAPI.key4}")
-    String apiKey4;
-    @Value("${restAPI.key5}")
-    String apiKey5;
-    @Value("${restAPI.key6}")
-    String apiKey6;
-    @Value("${restAPI.key7}")
-    String apiKey7;
 
 
     private static final Logger logger = LoggerFactory.getLogger("ApiService");
@@ -95,28 +84,15 @@ public class ApiService {
         }
     }
 
-    @Scheduled(cron = "0 */20 * * * ?")
+    @Scheduled(cron = "0 0 2 12 * ?")
     public void addImage() {
         content(apiKey);
-        content(apiKey2);
-        content(apiKey3);
-        content(apiKey4);
-        content(apiKey5);
-        content(apiKey6);
-        content(apiKey7);
-
         add(apiKey);
-        add(apiKey2);
-        add(apiKey3);
-        add(apiKey4);
-        add(apiKey5);
-        add(apiKey6);
-        add(apiKey7);
     }
 
     @Transactional
     public void add(String key){
-        List<PlaceImage> images = imageRepository.findAllByStateFalse(PageRequest.of(0, 100));
+        List<PlaceImage> images = imageRepository.findAllByStateFalse(PageRequest.of(0, 1000));
         List<PlaceImage> imageList = new ArrayList<>();
         for (PlaceImage placeImage : images) {
            placeService.updateState(placeImage.getId(), true);
@@ -157,8 +133,8 @@ public class ApiService {
         logger.info(imageList.size() + "개의 이미지 추가됨");
     }
 
-    @Scheduled(cron = "0 0 0 10 * ?")
-    @Transactional
+
+    @Scheduled(cron = "0 0 2 12 * ?")
     public void updatePlace() {
         String[] themes = {"12", "14", "28", "39"};
         for (String theme : themes) {
@@ -169,6 +145,8 @@ public class ApiService {
         }
         logger.info("모든 데이터 저장 완료");
     }
+
+
 
     public boolean savePlace(String theme, int pageNum) {
         List<Place> places = new ArrayList<>();
@@ -199,8 +177,6 @@ public class ApiService {
             for (int temp = 0; temp < nList.getLength(); temp++) {
                 Node nNode = nList.item(temp);
                 Element eElement = (Element) nNode;
-                if (getTagValue("addr1", eElement).equals(""))
-                    continue;
                 Long id = Long.parseLong(getTagValue("contentid", eElement));
                 if (!placeRepository.existsById(id)) {
                     Place place = Place.builder()
@@ -218,14 +194,34 @@ public class ApiService {
                             .readCount(Long.parseLong(getTagValue("readcount", eElement)))
                             .build();
 
-                    places.add(place);
                     String img = getTagValue("firstimage", eElement);
+                    if(place.getAddress().equals("")){
+                        orderService.createApiOrder(place, "주소값 누락", img);
+                        logger.info("order 주소값 누락 저장 완료");
+                        continue;
+                    }
+                    if(place.getAreaCode().equals("")){
+                        orderService.createApiOrder(place, "지역코드 누락", img);
+                        logger.info("order 지역코드 누락 저장 완료");
+                        continue;
+                    }
+                    if(Integer.parseInt(place.getAreaCode()) > 8 && place.getSigunguCode().equals("")){
+                        orderService.createApiOrder(place, "시군구코드 누락", img);
+                        logger.info("order 시군구코드 누락 저장 완료");
+                        continue;
+                    }
+                    if(Double.parseDouble(place.getMapX()) == 0 || Double.parseDouble(place.getMapX()) >= 132|| Double.parseDouble(place.getMapX()) == 0 || Double.parseDouble(place.getMapX()) >= 39){
+                        orderService.createApiOrder(place, "유효하지 않은 좌표값", img);
+                        logger.info("order 유효하지 않은 좌표값 저장 완료");
+                        continue;
+                    }
                     if (!img.equals(""))
                         imageList.add(PlaceImage.builder()
                                 .place(place)
                                 .imageUrl(img)
                                 .state(false)
                                 .build());
+                    places.add(place);
                     logger.info(place.getId() + " 저장 완료");
                 }
             }
@@ -239,4 +235,6 @@ public class ApiService {
         return totalCount > pageNum * 7000;
 
     }
+
+
 }
