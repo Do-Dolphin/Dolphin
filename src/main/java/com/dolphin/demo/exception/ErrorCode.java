@@ -29,7 +29,8 @@ public enum ErrorCode {
     NOT_FOUND_TOKEN(HttpStatus.NOT_FOUND, "404", "토큰 정보가 없습니다."),
 
     // 500
-    UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "500", "파일 업로드에 실패했습니다.");
+    UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "500", "파일 업로드에 실패했습니다."),
+    FAIL_FIND_AREA(HttpStatus.INTERNAL_SERVER_ERROR,"500"," 이 조건으로 게임을 진행할 수가 없습니다.");
 
 
     private final HttpStatus httpStatus;
