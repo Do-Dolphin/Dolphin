@@ -1,9 +1,9 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.*;
-import com.dolphin.demo.dto.repository.MemberRepository;
-import com.dolphin.demo.dto.repository.PlaceImageRepository;
-import com.dolphin.demo.dto.repository.PlaceRepository;
+import com.dolphin.demo.repository.MemberRepository;
+import com.dolphin.demo.repository.PlaceImageRepository;
+import com.dolphin.demo.repository.PlaceRepository;
 import com.dolphin.demo.dto.request.CourseDataRequestDto;
 import com.dolphin.demo.dto.request.CourseRequestDto;
 import com.dolphin.demo.dto.response.CourseListResponseDto;

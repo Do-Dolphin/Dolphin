@@ -2,7 +2,7 @@ package com.dolphin.demo.service;
 
 import com.dolphin.demo.dto.request.AuthEmailRequestDto;
 import com.dolphin.demo.dto.request.LoginRequestDto;
-import com.dolphin.demo.dto.repository.MemberRepository;
+import com.dolphin.demo.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

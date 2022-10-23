@@ -1,7 +1,7 @@
 package com.dolphin.demo.controller;
 
 import com.dolphin.demo.dto.response.PlaceSearchDto;
-import com.dolphin.demo.dto.repository.PlaceRepository;
+import com.dolphin.demo.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;

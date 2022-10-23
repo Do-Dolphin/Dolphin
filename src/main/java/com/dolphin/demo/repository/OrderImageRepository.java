@@ -1,4 +1,4 @@
-package com.dolphin.demo.dto.repository;
+package com.dolphin.demo.repository;
 
 import com.dolphin.demo.domain.Order;
 import com.dolphin.demo.domain.OrderImage;

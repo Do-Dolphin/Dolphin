@@ -5,7 +5,7 @@ import com.dolphin.demo.domain.MemberRoleEnum;
 import com.dolphin.demo.dto.request.KakaoUserInfoDto;
 import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
-import com.dolphin.demo.dto.repository.MemberRepository;
+import com.dolphin.demo.repository.MemberRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

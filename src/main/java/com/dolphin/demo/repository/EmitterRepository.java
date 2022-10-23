@@ -1,4 +1,4 @@
-package com.dolphin.demo.dto.repository;
+package com.dolphin.demo.repository;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

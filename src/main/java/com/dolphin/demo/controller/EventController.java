@@ -3,7 +3,7 @@ package com.dolphin.demo.controller;
 import com.dolphin.demo.domain.Event;
 import com.dolphin.demo.dto.request.EventRequestDto;
 import com.dolphin.demo.dto.response.EventResponseDto;
-import com.dolphin.demo.dto.repository.EventRepository;
+import com.dolphin.demo.repository.EventRepository;
 import com.dolphin.demo.service.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

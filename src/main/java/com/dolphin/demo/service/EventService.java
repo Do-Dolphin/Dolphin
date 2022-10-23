@@ -5,7 +5,7 @@ import com.dolphin.demo.dto.request.EventRequestDto;
 import com.dolphin.demo.dto.response.EventResponseDto;
 import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
-import com.dolphin.demo.dto.repository.EventRepository;
+import com.dolphin.demo.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

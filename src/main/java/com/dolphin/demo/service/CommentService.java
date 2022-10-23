@@ -1,10 +1,10 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.*;
-import com.dolphin.demo.dto.repository.CommentImageRepository;
-import com.dolphin.demo.dto.repository.CommentRepository;
-import com.dolphin.demo.dto.repository.MemberRepository;
-import com.dolphin.demo.dto.repository.PlaceRepository;
+import com.dolphin.demo.repository.CommentImageRepository;
+import com.dolphin.demo.repository.CommentRepository;
+import com.dolphin.demo.repository.MemberRepository;
+import com.dolphin.demo.repository.PlaceRepository;
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.request.ImageRequestDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
