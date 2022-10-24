@@ -107,8 +107,6 @@ public class CommentService {
             imageList.add(image.getImageUrl());
         }
 
-        notificationService.send(member, "후기가 성공적으로 저장되었습니다");
-
         commentImageRepository.saveAll(saveImages);
         return ResponseEntity.ok().body(CommentResponseDto.builder()
                 .comment_id(comment.getId())
