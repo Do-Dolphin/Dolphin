@@ -80,6 +80,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("https://dolgo.life");
         configuration.addAllowedOriginPattern("http://dolgo.site");
+        configuration.addAllowedOriginPattern("http://sparta-y.shop.s3-website.ap-northeast-2.amazonaws.com");
         configuration.addAllowedOriginPattern("http://localhost:3000");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
