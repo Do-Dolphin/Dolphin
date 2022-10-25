@@ -22,6 +22,11 @@ public class WorldCupController {
         return worldCupService.makeWorldCup(areaCode, sigunguCode, themes);
     }
 
+    @GetMapping(value = "/api/auth/place/worldcup")
+    public ResponseEntity<List<List<WorldCupResponseDto>>> likeWorldCup(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        return worldCupService.likeWorldCup(userDetails.getUsername());
+    }
+
     @PostMapping(value = "/api/place/reworldcup")
     public ResponseEntity<List<List<WorldCupResponseDto>>> reWorldCup(@RequestBody WorldCupRequestDto worldCupRequestDto){
         return worldCupService.reWorldCup(worldCupRequestDto);

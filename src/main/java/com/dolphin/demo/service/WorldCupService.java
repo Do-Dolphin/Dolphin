@@ -22,6 +22,8 @@ public class WorldCupService {
 
     private final PlaceRepository placeRepository;
     private final PlaceImageRepository placeImageRepository;
+    private final HeartRepository heartRepository;
+    private final MemberRepository memberRepository;
 
 
     public ResponseEntity<List<List<WorldCupResponseDto>>> makeWorldCup(String areaCode, String sigunguCode, String themes) {
@@ -60,24 +62,53 @@ public class WorldCupService {
         for (int i = 0; i < 32; i++) {
             int index = (int) (Math.random() * placeList.size());
             if(placeImageRepository.findFirstByPlace(placeList.get(index)).isPresent()) {
-                System.out.println(placeImageRepository.findFirstByPlace(placeList.get(index)).get().getImageUrl());
-                WorldCupResponseDto placeListResponseDto = WorldCupResponseDto.builder()
+                placeListResponseDtoList.add(WorldCupResponseDto.builder()
                         .id(placeList.get(index).getId())
                         .title(placeList.get(index).getTitle())
                         .image(placeImageRepository.findFirstByPlace(placeList.get(index)).get().getImageUrl())
-                        .build();
-                placeListResponseDtoList.add(placeListResponseDto);
+                        .build());
                 placeList.remove(index);
             } else{
-                WorldCupResponseDto placeListResponseDto = WorldCupResponseDto.builder()
+                placeListResponseDtoList.add(WorldCupResponseDto.builder()
                         .id(placeList.get(index).getId())
                         .title(placeList.get(index).getTitle())
-                        .build();
-                placeListResponseDtoList.add(placeListResponseDto);
+                        .build());
                 placeList.remove(index);
             }
         }
         List<List<WorldCupResponseDto>> partition = Lists.partition(placeListResponseDtoList, 2);
+        return new ResponseEntity<>(partition, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<List<WorldCupResponseDto>>> likeWorldCup(String username){
+        Member member = memberRepository.findByUsername(username).orElseThrow(
+                () -> new CustomException(ErrorCode.UNAUTHORIZED_LOGIN)
+        );
+
+        List<Heart> hearts = heartRepository.findAllByMember(member);
+
+        List<WorldCupResponseDto> worldCupResponseDtoList = new ArrayList<>();
+
+        for(int i =0; i<32;i++){
+            int index = (int) (Math.random() * hearts.size());
+            Place place = hearts.get(index).getPlace();
+            PlaceImage img = placeImageRepository.findFirstByPlace(place).orElse(null);
+            if (img != null) {
+                worldCupResponseDtoList.add(WorldCupResponseDto.builder()
+                        .id(place.getId())
+                        .title(place.getTitle())
+                        .image(img.getImageUrl())
+                        .build());
+                hearts.remove(index);
+            }else {
+                worldCupResponseDtoList.add(WorldCupResponseDto.builder()
+                        .id(place.getId())
+                        .title(place.getTitle())
+                        .build());
+                hearts.remove(index);
+            }
+        }
+        List<List<WorldCupResponseDto>> partition = Lists.partition(worldCupResponseDtoList, 2);
         return new ResponseEntity<>(partition, HttpStatus.OK);
     }
 
