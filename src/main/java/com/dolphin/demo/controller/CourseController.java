@@ -71,7 +71,7 @@ public class CourseController {
     @PutMapping("/course/{id}")
     public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable Long id,
                                                @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                               @RequestBody CourseRequestDto courseRequestDto) {
+                                               @RequestBody CourseUpdateRequestDto courseRequestDto) {
 
         return courseService.updateCourse(userDetails,courseRequestDto, id);
     }
