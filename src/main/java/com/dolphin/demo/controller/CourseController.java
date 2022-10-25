@@ -1,25 +1,14 @@
 package com.dolphin.demo.controller;
 
-import com.dolphin.demo.domain.Course;
-import com.dolphin.demo.domain.CourseItem;
-import com.dolphin.demo.domain.Place;
 import com.dolphin.demo.dto.request.*;
 import com.dolphin.demo.dto.response.CourseListResponseDto;
 import com.dolphin.demo.dto.response.CourseResponseDto;
-import com.dolphin.demo.dto.response.OrderListResponseDto;
-import com.dolphin.demo.dto.response.OrderResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.CourseService;
-import com.dolphin.demo.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.validation.Valid;
-import java.io.IOException;
 import java.util.List;
 
 
