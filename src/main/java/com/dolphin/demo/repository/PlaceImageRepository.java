@@ -12,6 +12,5 @@ public interface PlaceImageRepository extends JpaRepository<PlaceImage, Long> {
     List<PlaceImage> findAllByPlace(Place place);
     Optional<PlaceImage> findFirstByPlace(Place Place);
     List<PlaceImage> findAllByStateFalse(PageRequest pageRequest);
-    List<PlaceImage> findAllByStateTrue();
 
 }
