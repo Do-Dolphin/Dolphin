@@ -1,8 +1,13 @@
 package com.dolphin.demo.service;
 
+import com.dolphin.demo.domain.Heart;
+import com.dolphin.demo.domain.Member;
 import com.dolphin.demo.domain.Place;
+import com.dolphin.demo.domain.PlaceImage;
 import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
+import com.dolphin.demo.repository.HeartRepository;
+import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.PlaceImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import com.dolphin.demo.dto.request.WorldCupRequestDto;
@@ -26,7 +31,7 @@ public class WorldCupService {
     private final MemberRepository memberRepository;
 
 
-    public ResponseEntity<List<List<WorldCupResponseDto>>> makeWorldCup(String areaCode, String sigunguCode, String themes) {
+    public ResponseEntity<List<WorldCupResponseDto>> makeWorldCup(String areaCode, String sigunguCode, String themes) {
         List<Place> placeList;
         if(areaCode.equals("0")){
             if(themes.equals("0")){
@@ -58,29 +63,28 @@ public class WorldCupService {
             }
         }
 
-        List<WorldCupResponseDto> placeListResponseDtoList = new ArrayList<>();
+        List<WorldCupResponseDto> worldCupResponseDtoList = new ArrayList<>();
         for (int i = 0; i < 32; i++) {
             int index = (int) (Math.random() * placeList.size());
             if(placeImageRepository.findFirstByPlace(placeList.get(index)).isPresent()) {
-                placeListResponseDtoList.add(WorldCupResponseDto.builder()
+                worldCupResponseDtoList.add(WorldCupResponseDto.builder()
                         .id(placeList.get(index).getId())
                         .title(placeList.get(index).getTitle())
                         .image(placeImageRepository.findFirstByPlace(placeList.get(index)).get().getImageUrl())
                         .build());
                 placeList.remove(index);
             } else{
-                placeListResponseDtoList.add(WorldCupResponseDto.builder()
+                worldCupResponseDtoList.add(WorldCupResponseDto.builder()
                         .id(placeList.get(index).getId())
                         .title(placeList.get(index).getTitle())
                         .build());
                 placeList.remove(index);
             }
         }
-        List<List<WorldCupResponseDto>> partition = Lists.partition(placeListResponseDtoList, 2);
-        return new ResponseEntity<>(partition, HttpStatus.OK);
+        return new ResponseEntity<>(worldCupResponseDtoList, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<List<WorldCupResponseDto>>> likeWorldCup(String username){
+    public ResponseEntity<List<WorldCupResponseDto>> likeWorldCup(String username){
         Member member = memberRepository.findByUsername(username).orElseThrow(
                 () -> new CustomException(ErrorCode.UNAUTHORIZED_LOGIN)
         );
@@ -108,13 +112,11 @@ public class WorldCupService {
                 hearts.remove(index);
             }
         }
-        List<List<WorldCupResponseDto>> partition = Lists.partition(worldCupResponseDtoList, 2);
-        return new ResponseEntity<>(partition, HttpStatus.OK);
+        return new ResponseEntity<>(worldCupResponseDtoList, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<List<WorldCupResponseDto>>> reWorldCup(WorldCupRequestDto worldCupRequestDto){
+    public ResponseEntity<List<WorldCupResponseDto>> reWorldCup(WorldCupRequestDto worldCupRequestDto){
         List<WorldCupResponseDto> worldCupResponseDtoList = new ArrayList<>(worldCupRequestDto.getWorldCupResponseDtoList());
-        List<List<WorldCupResponseDto>> partition = Lists.partition(worldCupResponseDtoList, 2);
-        return new ResponseEntity<>(partition, HttpStatus.OK);
+        return new ResponseEntity<>(worldCupResponseDtoList, HttpStatus.OK);
     }
 }
