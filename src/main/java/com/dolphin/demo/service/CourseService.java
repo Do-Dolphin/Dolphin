@@ -1,6 +1,8 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.*;
+import com.dolphin.demo.dto.request.CourseUpdateDataRequestDto;
+import com.dolphin.demo.dto.request.CourseUpdateRequestDto;
 import com.dolphin.demo.repository.MemberRepository;
 import com.dolphin.demo.repository.PlaceImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
@@ -208,7 +210,7 @@ public class CourseService {
     }
 
     @Transactional
-    public ResponseEntity<CourseResponseDto> updateCourse(UserDetailsImpl userDetails, CourseRequestDto requestDto, Long id) {
+    public ResponseEntity<CourseResponseDto> updateCourse(UserDetailsImpl userDetails, CourseUpdateRequestDto requestDto, Long id) {
 
         Course course = courseRepository.findById(id).orElse(null);
         if(course == null)
@@ -223,8 +225,8 @@ public class CourseService {
 
         courseItems.clear();
 
-        for (CourseDataRequestDto dto: requestDto.getData()) {
-            Place place = placeRepository.findById(dto.getPlaceId()).orElse(null);
+        for (CourseUpdateDataRequestDto dto: requestDto.getData()) {
+            Place place = placeRepository.findById(dto.getId()).orElse(null);
             if(place == null)
                 throw new CustomException(ErrorCode.NOT_FOUND_PLACE);
             courseItems.add(CourseItem.builder()
