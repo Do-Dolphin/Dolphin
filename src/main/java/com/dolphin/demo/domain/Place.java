@@ -16,6 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_theme", columnList = "theme"),
+        @Index(name = "idx_readCount", columnList = "readCount"),
+        @Index(name = "idx_area", columnList = "areaCode, sigunguCode"),
+})
 public class Place {
 
   @Id
