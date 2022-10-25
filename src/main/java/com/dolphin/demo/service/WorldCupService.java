@@ -12,7 +12,6 @@ import com.dolphin.demo.repository.PlaceImageRepository;
 import com.dolphin.demo.repository.PlaceRepository;
 import com.dolphin.demo.dto.request.WorldCupRequestDto;
 import com.dolphin.demo.dto.response.WorldCupResponseDto;
-import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
