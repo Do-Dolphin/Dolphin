@@ -26,6 +26,6 @@ if [ ! -z ${TARGET_PID} ]; then
 fi
 
 cp $PROJECT_ROOT/build/libs/*.jar $JAR_FILE
-nohup java -jar -Dserver.port=${TARGET_PORT} $PROJECT_ROOT/spring-webapp.jar > /home/ubuntu/app/nohup.out 2>&1 &
+nohup java -Xms256m -Xmx512m -jar -Dserver.port=${TARGET_PORT} $PROJECT_ROOT/spring-webapp.jar > /home/ubuntu/app/nohup.out 2>&1 &
 echo "> Now new WAS runs at ${TARGET_PORT}."
 exit 0
