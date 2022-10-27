@@ -31,8 +31,9 @@ public class CommentController {
         return commentService.getComment(place_id);
     }
 
+    //최근 후기 목록 조회
     @GetMapping("/comment/recent")
-    public ResponseEntity<List<CommentListResponseDto>> getRecentCommentList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<List<CommentListResponseDto>> getRecentCommentList() {
 
         return commentService.getRecentComment();
     }
