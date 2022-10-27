@@ -1,5 +1,5 @@
 <p align="center">
- <img src="https://user-images.githubusercontent.com/110075438/198322820-92ee0421-79b3-479e-8a21-afaa1a917808.png">
+ <img src="https://user-images.githubusercontent.com/97495661/198329036-9b258aa5-cb1b-4d27-b8c6-7609e052f861.png">
 </p>
  <h3> 어디로 갈지 고민 될 때! 랜덤 여행지 추천부터, 수많은 여행지를 소개해드리는 서비스입니다. </h3></div>
 <div align="center"></div>
@@ -104,7 +104,9 @@
 
 ## 🙂 아키텍쳐
 
-![돌고돌래아키텍쳐](https://user-images.githubusercontent.com/110075438/194560203-edea3aaf-e428-466c-9ec9-89933c233875.PNG)
+![아키텍쳐](https://user-images.githubusercontent.com/97495661/198329375-c93bca10-7fb1-4d49-88b9-aab30fcef434.png)
+
+<br>
 
 ## 😮 ERD
 
