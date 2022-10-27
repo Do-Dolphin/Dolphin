@@ -2,6 +2,7 @@ package com.dolphin.demo.controller;
 
 import com.dolphin.demo.dto.request.CommentRequestDto;
 import com.dolphin.demo.dto.request.ImageRequestDto;
+import com.dolphin.demo.dto.response.CommentListResponseDto;
 import com.dolphin.demo.dto.response.CommentResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.CommentService;
@@ -28,6 +29,12 @@ public class CommentController {
     public ResponseEntity<List<CommentResponseDto>> getComment(@PathVariable Long place_id) {
 
         return commentService.getComment(place_id);
+    }
+
+    @GetMapping("/comment/recent")
+    public ResponseEntity<List<CommentListResponseDto>> getRecentCommentList(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        return commentService.getRecentComment();
     }
 
     // 후기 작성

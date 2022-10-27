@@ -1,6 +1,7 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.*;
+import com.dolphin.demo.dto.response.CommentListResponseDto;
 import com.dolphin.demo.repository.CommentImageRepository;
 import com.dolphin.demo.repository.CommentRepository;
 import com.dolphin.demo.repository.MemberRepository;
@@ -12,6 +13,7 @@ import com.dolphin.demo.exception.CustomException;
 import com.dolphin.demo.exception.ErrorCode;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,8 +33,30 @@ public class CommentService {
     private final CommentImageRepository commentImageRepository;
     private final PlaceRepository placeRepository;
     private final MemberRepository memberRepository;
-    private final NotificationService notificationService;
 
+    // 여행지 상세페이지 후기 조회
+    public ResponseEntity<List<CommentListResponseDto>> getRecentComment() {
+
+        // 최근에 달린 댓글 30개를 불러옴
+        List<Comment> commentList = commentRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0,30));
+
+        // 보여줄 데이터
+        List<CommentListResponseDto> commentResult = new ArrayList<>();
+
+        // 불러온 모든 후기 comments에 담기
+        for (Comment comments : commentList) {
+
+            commentResult.add(CommentListResponseDto.builder()
+                    .comment_id(comments.getId())
+                    .place_id(comments.getPlace().getId())
+                    .placeTitle(comments.getPlace().getTitle())
+                    .title(comments.getTitle())
+                    .createdAt(comments.getCreatedAt())
+                    .build());
+        }
+
+        return ResponseEntity.ok().body(commentResult);
+    }
 
     // 여행지 상세페이지 후기 조회
     public ResponseEntity<List<CommentResponseDto>> getComment(Long place_id) {
@@ -298,5 +322,8 @@ public class CommentService {
             throw new CustomException(ErrorCode.DO_NOT_MATCH_USER);
         return member;
     }
+
+
+
 
 }
