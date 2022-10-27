@@ -8,5 +8,6 @@ import java.util.List;
 public interface CommentImageRepository extends JpaRepository<CommentImage, Long> {
 
     List<CommentImage> findAllByCommentId(Long comment_id);
+    boolean existsByCommentId(Long comment_id);
 
 }
