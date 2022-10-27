@@ -20,4 +20,6 @@ public class CommentListResponseDto {
     private String placeTitle;
     private String title;
     private LocalDateTime createdAt;
+    private boolean image;
+
 }
