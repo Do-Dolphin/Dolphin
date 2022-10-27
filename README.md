@@ -1,10 +1,7 @@
 <p align="center">
-  <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FumhaH%2FbtrN5jjgeDt%2FaQ6fqk4dDfc2j7AjVlDZCK%2Fimg.png" alt="text" width="number" />
-<div align="center"><h3>여행을 어디로 갈지 고민 될 때! 랜덤 여행지 추천부터, 수많은 여행지를 소개해드리는 서비스입니다. </h3></div>
+  ![KakaoTalk_20221027_232001752](https://user-images.githubusercontent.com/110075438/198320887-ab465f4e-ecdd-4d00-bcc0-a8a768a86cf0.png)
+  <h3> 어디로 갈지 고민 될 때! 랜덤 여행지 추천부터, 수많은 여행지를 소개해드리는 서비스입니다. </h3></div>
 </p>
-
-
-
 <div align="center"></div>
 
 # 🐬 돌고돌래
@@ -23,13 +20,15 @@
 <br>
 
 ### 📰 제작기간 & 팀원 소개
-- 2022-09-16 ~ (진행중)
- 
+- 2022-09-16. ~ 2022-10-28.
+
+![KakaoTalk_20221026_143438786](https://user-images.githubusercontent.com/110075438/198321462-8457a883-df7c-4b8c-9c37-ee8e1ad3c983.png)
+
 |이름|포지션|담당 기능 구현|
 |------|---|---|
 |서나연|Backend|여행지 관련 기능(CRUD, 랜덤추천, 여행지찜하기, 마이페이지(찜한 여행지 목록), HTTPS, 서버 관리|
 |박성수|Backend|회원관리(Spring security, JWT, 소셜로그인), 이메일인증, Redis, 알림기능(SSE)|
-|류경현|Backend|여행지 정렬, 테마별 TOP10|
+|류경현|Backend||
 |강민승|Backend|댓글 관련 기능(CRUD, 마이페이지(댓글 목록)), 축제 관련 기능(CRUD), 다중 파일 업로드 기능, S3관리, 검색기능(Querydsl)|
 
 <br>
