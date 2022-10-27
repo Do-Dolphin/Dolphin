@@ -1,7 +1,7 @@
-<p>
- ![KakaoTalk_20221027_232001752](https://user-images.githubusercontent.com/110075438/198322820-92ee0421-79b3-479e-8a21-afaa1a917808.png)
- <h3> 어디로 갈지 고민 될 때! 랜덤 여행지 추천부터, 수많은 여행지를 소개해드리는 서비스입니다. </h3></div>
+<p align="center">
+ <img src="https://user-images.githubusercontent.com/110075438/198322820-92ee0421-79b3-479e-8a21-afaa1a917808.png">
 </p>
+ <h3> 어디로 갈지 고민 될 때! 랜덤 여행지 추천부터, 수많은 여행지를 소개해드리는 서비스입니다. </h3></div>
 <div align="center"></div>
 
 # 🐬 돌고돌래
@@ -22,9 +22,10 @@
 ### 📰 제작기간 & 팀원 소개
 - 2022-09-16. ~ 2022-10-28.
 
-<p>
-![KakaoTalk_20221026_143438786](https://user-images.githubusercontent.com/110075438/198321462-8457a883-df7c-4b8c-9c37-ee8e1ad3c983.png)
+<p align="center">
+<img src="https://user-images.githubusercontent.com/110075438/198321462-8457a883-df7c-4b8c-9c37-ee8e1ad3c983.png">
 </p>
+
 |이름|포지션|담당 기능 구현|
 |------|---|---|
 |서나연|Backend|여행지 관련 기능(CRUD, 랜덤추천, 여행지찜하기, 마이페이지(찜한 여행지 목록), HTTPS, 서버 관리|
