@@ -81,6 +81,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.addAllowedOriginPattern("https://dolgo.life");
         configuration.addAllowedOriginPattern("http://dolgo.site");
         configuration.addAllowedOriginPattern("http://sparta-y.shop.s3-website.ap-northeast-2.amazonaws.com");
+        configuration.addAllowedOriginPattern("http://dolgo.site.s3-website.ap-northeast-2.amazonaws.com"); // 임시 여행코스용
         configuration.addAllowedOriginPattern("http://localhost:3000");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
