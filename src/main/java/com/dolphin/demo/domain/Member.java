@@ -1,9 +1,9 @@
 package com.dolphin.demo.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.dolphin.demo.dto.request.NicknameDto;
+
+import lombok.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
 
@@ -28,5 +28,22 @@ public class Member {
     @Column
     private String nickname;
 
+    @Column
+    @Enumerated(value = EnumType.STRING)
+    private MemberRoleEnum role;
+
+    public void updateNickname(NicknameDto nicknameDto){
+        this.nickname = nicknameDto.getNickname();
+    }
+
+    public void updatePassword(String newPassword){
+        this.password = newPassword;
+    }
+
+    public void OutMember(){
+        this.username = null;
+        this.password = null;
+        this.role = null;
+    }
 
 }

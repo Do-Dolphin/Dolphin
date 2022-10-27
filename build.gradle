@@ -2,6 +2,8 @@ plugins {
     id 'org.springframework.boot' version '2.7.3'
     id 'io.spring.dependency-management' version '1.0.13.RELEASE'
     id 'java'
+    //querydsl 추가
+    id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'com.dolphin'
@@ -13,6 +15,11 @@ configurations {
         extendsFrom annotationProcessor
     }
 }
+
+jar {
+    enabled = false
+}
+
 
 repositories {
     mavenCentral()
@@ -27,6 +34,12 @@ dependencies {
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.300')
     implementation 'com.amazonaws:aws-java-sdk-s3'
 
+    // 이미지 리사이징을 위한 marvin 디펜던시
+    implementation 'com.github.downgoon:marvin:1.5.5'
+    implementation 'com.github.downgoon:MarvinPlugins:1.5.5'
+    implementation group: 'org.springframework', name: 'spring-test'
+    implementation group: 'org.springframework', name: 'spring-mock', version: '2.0.8'
+
     // Tika (이미지 파일만 업로드 할 수 있게 확장자 구별)
     implementation group: 'org.apache.tika', name: 'tika-core', version: '1.24.1'
 
@@ -39,13 +52,15 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    //시큐리티
+    // 시큐리티
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    //	이메일
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.6.3'
+    // 이메일
+    implementation 'org.springframework.boot:spring-boot-starter-mail:2.7.3'
 
-    //카카오
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    // 카카오
     implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.6.3'
     
     // json 파싱
@@ -61,9 +76,14 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     implementation 'commons-codec:commons-codec:1.13'
 
-    //redis
+    // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // querydsl 추가
+    implementation "com.querydsl:querydsl-jpa:5.0.0"
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0"
+
+    implementation("com.google.guava:guava:31.1-jre")
 
 
 
@@ -72,3 +92,20 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// querydsl 추가 시작
+def querydslDir = "$buildDir/generated/querydsl"
+querydsl {
+    jpa = true
+    querydslSourcesDir = querydslDir
+}
+sourceSets {
+    main.java.srcDir querydslDir
+}
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+compileQuerydsl {
+    options.annotationProcessorPath = configurations.querydsl
+}
+// querydsl 추가 끝

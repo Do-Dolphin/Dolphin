@@ -29,7 +29,7 @@ public class JwtTokenProvider {
 
     // 토큰 유효시간
     // 프론트엔드와 약속해야 함
-    private final Long tokenValidTime = 30*60*1000L;  // 30분
+    private final Long tokenValidTime = 30*60*1000L;   // 30분
     private final Long refreshTokenValidTime = 7*24*60*60*1000L;  // 1주일
 
     private final UserDetailsService userDetailsService;
@@ -78,7 +78,6 @@ public class JwtTokenProvider {
     }
 
     //Request의 Header에서 token 값을 가져옴
-    //"X-AUTH-TOKEN":"TOKEN 깞"
     public String resolveToken(HttpServletRequest request) {
         return request.getHeader("Authorization");
     }

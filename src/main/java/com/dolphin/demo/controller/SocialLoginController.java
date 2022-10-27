@@ -1,5 +1,6 @@
 package com.dolphin.demo.controller;
 
+import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.service.KakaoLoginService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +16,11 @@ public class SocialLoginController {
     private final KakaoLoginService kakaoLogin;
 
     @GetMapping("/api/kakao/login")
-    public ResponseEntity<String> kakaoLogin(
+    public ResponseEntity<MemberResponseDto> kakaoLogin(
             @RequestParam(value = "code") String code) throws JsonProcessingException {
         return kakaoLogin.kakaoLogin(code);
     }
 
-    //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=233f3697fb15f1850ac032d88db3348f&redirect_uri=http://localhost:8080/kakaoloading/
+    //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=1af8a4039402102e8193e16de2a1b4fb&redirect_uri=http://localhost:3000/oauth/callback/kakao
 
 }

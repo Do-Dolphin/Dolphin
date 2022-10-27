@@ -1,17 +1,16 @@
 package com.dolphin.demo.controller;
 
-import com.dolphin.demo.domain.Member;
-import com.dolphin.demo.dto.requestDto.LoginRequestDto;
-import com.dolphin.demo.dto.requestDto.SignupRequestDto;
+import com.dolphin.demo.dto.request.LoginRequestDto;
+import com.dolphin.demo.dto.request.MemberOutDto;
+import com.dolphin.demo.dto.request.NicknameDto;
+import com.dolphin.demo.dto.request.SignupRequestDto;
+import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -20,23 +19,16 @@ import javax.validation.Valid;
 public class MemberController {
 
     private final MemberService memberService;
-
-
-    //중복 아이디(이메일) 확인
-    @PostMapping("/api/member/duplicate")
-    public ResponseEntity<String> duplicateUsername(@Valid @RequestBody LoginRequestDto requestDto) {
-        return memberService.duplicateUsername(requestDto);
-    }
-
+    
     //회원가입
     @PostMapping("/api/member/signup")
-    public ResponseEntity<Member> signup(@Valid @RequestBody SignupRequestDto requestDto) {
+    public ResponseEntity<MemberResponseDto> signup(@Valid @RequestBody SignupRequestDto requestDto) {
         return memberService.signup(requestDto);
     }
 
     //로그인
     @PostMapping("/api/member/login")
-    public ResponseEntity<Member> login(@RequestBody LoginRequestDto requestDto) {
+    public ResponseEntity<MemberResponseDto> login(@RequestBody LoginRequestDto requestDto) {
         return memberService.login(requestDto);
     }
 
@@ -47,15 +39,32 @@ public class MemberController {
         return memberService.logout(userDetails.getMember().getId(),refreshToken);
     }
 
-    // 만료된 access token 재 발급
-    @PostMapping(value = "/api/auth/member/retoken")
-    public ResponseEntity<String> reToken(
-            @RequestHeader(value = "Authorization") String accessToken,
-            @RequestHeader(value = "RefreshToken") String refreshToken) {
-
-        return memberService.reToken(accessToken, refreshToken);
+    //닉네임 변경
+    @PutMapping("/api/auth/member/updatenickname")
+    public ResponseEntity<MemberResponseDto> updateNickname(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                 @RequestBody NicknameDto nicknameDto) {
+        return memberService.updateNickname(userDetails.getMember(), nicknameDto);
     }
 
+    //비밀번호 변경
+    @PutMapping("/api/auth/member/updatepassword")
+    public ResponseEntity<String> updatePassword(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                            @RequestBody NicknameDto nicknameDto) {
+        return memberService.updatePassword(userDetails.getMember(), nicknameDto);
+    }
 
+    // 만료된 access token 재 발급
+    @PostMapping("/api/member/retoken")
+    public ResponseEntity<String> reToken(
+            @RequestHeader(value = "RefreshToken") String refreshToken) {
+
+        return memberService.reToken(refreshToken);
+    }
+
+    @PostMapping("/api/auth/member/memberout")
+    public ResponseEntity<String> memberout(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                            @RequestBody MemberOutDto memberOutDto){
+        return memberService.memberout(userDetails.getMember(), memberOutDto);
+    }
 
 }

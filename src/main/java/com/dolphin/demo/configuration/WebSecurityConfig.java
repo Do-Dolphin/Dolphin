@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,6 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity // 스프링 Security 지원을 가능하게 함
+@EnableGlobalMethodSecurity(securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -59,12 +61,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
 
                 .antMatchers(HttpMethod.OPTIONS, "/**/*").permitAll()
-                .anyRequest().permitAll()
-                //임시로 모든 요청 허용
 
                 // 회원 관리 처리 API 전부를 login 없이 허용
-//                .antMatchers("/member/*").permitAll()
-//                .anyRequest().authenticated()
+                .antMatchers("/api/member/**").permitAll()
+                .antMatchers("/api/kakao/**").permitAll()
+                .antMatchers("/api/comment/**").permitAll()
+                .antMatchers("/api/place/**").permitAll()
+                .antMatchers("/api/events").permitAll()
+                .anyRequest().authenticated()
                 // 그 외 어떤 요청이든 '인증'
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
@@ -74,8 +78,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("https://dolgo.life");
+        configuration.addAllowedOriginPattern("http://dolgo.site");
+        configuration.addAllowedOriginPattern("http://sparta-y.shop.s3-website.ap-northeast-2.amazonaws.com");
+        configuration.addAllowedOriginPattern("http://dolgo.site.s3-website.ap-northeast-2.amazonaws.com"); // 임시 여행코스용
         configuration.addAllowedOriginPattern("http://localhost:3000");
-        configuration.addAllowedOriginPattern("https://localhost:3000");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.addExposedHeader("Authorization");

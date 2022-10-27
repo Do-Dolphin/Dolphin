@@ -1,9 +1,12 @@
 package com.dolphin.demo.jwt;
 
 import com.dolphin.demo.domain.Member;
+import com.dolphin.demo.domain.MemberRoleEnum;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -26,6 +29,7 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public String getUsername() { return member.getUsername(); }
 
+    //계정이 만료되었는지 리턴. (true: 만료되지 않음)
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -37,7 +41,7 @@ public class UserDetailsImpl implements UserDetails {
         return true;
     }
 
-    //계정이 만료되지 않았는지 리턴 (true: 만료 안됨)
+    //패스워드 만료되지 않았는지 리턴 (true: 만료 안됨)
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
@@ -49,9 +53,15 @@ public class UserDetailsImpl implements UserDetails {
         return true;
     }
 
-    @Override // 인가를 해주는 부분
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
-    }
+        MemberRoleEnum memberRole = member.getRole();
+        String authority = memberRole.getAuthority();
 
+        SimpleGrantedAuthority simpleAuthority = new SimpleGrantedAuthority(authority);
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(simpleAuthority);
+
+        return authorities;
+    }
 }

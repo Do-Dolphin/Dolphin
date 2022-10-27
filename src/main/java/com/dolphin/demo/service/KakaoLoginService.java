@@ -1,7 +1,9 @@
 package com.dolphin.demo.service;
 
 import com.dolphin.demo.domain.Member;
-import com.dolphin.demo.dto.requestDto.KakaoUserInfoDto;
+import com.dolphin.demo.domain.MemberRoleEnum;
+import com.dolphin.demo.dto.request.KakaoUserInfoDto;
+import com.dolphin.demo.dto.response.MemberResponseDto;
 import com.dolphin.demo.jwt.UserDetailsImpl;
 import com.dolphin.demo.repository.MemberRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,9 +15,7 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 
@@ -41,7 +40,7 @@ public class KakaoLoginService {
     private final MemberService memberService;
 
     @Transactional
-    public ResponseEntity<String> kakaoLogin(String code) throws JsonProcessingException {
+    public ResponseEntity<MemberResponseDto> kakaoLogin(String code) throws JsonProcessingException {
         // 1. "인가코드" 로 "액세스 토큰" 요청
         String accessToken = getAccessToken(code);
 
@@ -57,9 +56,10 @@ public class KakaoLoginService {
         //  5. response Header에 JWT 토큰 추가
         memberService.tokensProcess(kakaoMember.getUsername());
 
-        String message = kakaoMember.getNickname()+"님 환영합니다.";
-
-        return new ResponseEntity<>(message, HttpStatus.OK);
+        return new ResponseEntity<>(MemberResponseDto.builder()
+                .username(kakaoMember.getUsername())
+                .nickname(kakaoMember.getNickname())
+                .build(),HttpStatus.OK);
     }
 
     //header 에 Content-type 지정
@@ -129,14 +129,18 @@ public class KakaoLoginService {
 
         //DB에 중복 계정이 없으면 회원가입 처리
         if (findKakao == null) {
-            String nickName = kakaoUserInfoDto.getNickname();
             String email = kakaoUserInfoDto.getEmail();
             String password = UUID.randomUUID().toString();
             String encodedPassword = passwordEncoder.encode(password);
+            String nickname = memberService.rendomNickname();
+            while (null != memberRepository.findByNickname(nickname).orElse(null)){
+             nickname = memberService.rendomNickname();
+            }
             Member kakaoMember = Member.builder()
                     .username(email)
-                    .nickname(nickName)
                     .password(encodedPassword)
+                    .nickname(nickname)
+                    .role(MemberRoleEnum.MEMBER)
                     .build();
             memberRepository.save(kakaoMember);
 

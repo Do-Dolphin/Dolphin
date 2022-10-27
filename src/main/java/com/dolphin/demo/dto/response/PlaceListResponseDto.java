@@ -3,8 +3,6 @@ package com.dolphin.demo.dto.response;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.List;
-
 @Builder
 @Getter
 public class PlaceListResponseDto {
@@ -13,4 +11,5 @@ public class PlaceListResponseDto {
     private float star;
     private String image;
     private String theme;
+    private boolean state;
 }
