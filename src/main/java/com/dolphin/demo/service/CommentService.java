@@ -52,7 +52,6 @@ public class CommentService {
                     .placeTitle(comments.getPlace().getTitle())
                     .title(comments.getTitle())
                     .createdAt(comments.getCreatedAt())
-                    .image(commentImageRepository.existsByCommentId(comments.getId()))
                     .build());
         }
 
