@@ -17,6 +17,8 @@
   - 지역별 인기 여행지 추천
   - 랜덤 여행지 추천
  
+[![시연영상](http://img.youtube.com/vi/kxTQ7LKWyTA/0.jpg)](https://youtu.be/kxTQ7LKWyTA)
+ 
 <br>
 
 ### 📰 제작기간 & 팀원 소개
