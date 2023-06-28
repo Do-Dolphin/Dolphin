@@ -16,7 +16,8 @@
   - 관광, 관람, 액티비티, 식도락이라는 4개의 테마별 인기 여행지 추천
   - 지역별 인기 여행지 추천
   - 랜덤 여행지 추천
- 
+
+### 🎞 시연영상 👇
 [![시연영상](http://img.youtube.com/vi/kxTQ7LKWyTA/0.jpg)](https://youtu.be/kxTQ7LKWyTA)
  
 <br>
